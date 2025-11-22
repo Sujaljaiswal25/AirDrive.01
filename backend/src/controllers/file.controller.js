@@ -119,13 +119,56 @@ const deleteFile = async (req, res) => {
       return res.status(401).json({ message: "Not authorized" });
     }
 
-    if (file.fileId) {
-      await deleteFileFromImageKit(file.fileId);
+    // If it's a folder, delete all files inside it first
+    if (file.type === "folder") {
+      const filesInFolder = await fileModel.find({
+        owner: userId,
+        folder: fileId,
+      });
+
+      // Delete each file in the folder from ImageKit and MongoDB
+      for (const childFile of filesInFolder) {
+        if (
+          childFile.type !== "folder" &&
+          childFile.fileId &&
+          !childFile.fileId.startsWith("folder_")
+        ) {
+          try {
+            await deleteFileFromImageKit(childFile.fileId);
+          } catch (imagekitError) {
+            console.warn(
+              `ImageKit deletion failed for ${childFile.name}:`,
+              imagekitError.message
+            );
+          }
+        }
+        await fileModel.findByIdAndDelete(childFile._id);
+      }
+    } else {
+      // Only delete from ImageKit if it's not a folder and has a valid fileId
+      if (file.fileId && !file.fileId.startsWith("folder_")) {
+        try {
+          await deleteFileFromImageKit(file.fileId);
+        } catch (imagekitError) {
+          console.warn(
+            "ImageKit deletion failed (file may not exist):",
+            imagekitError.message
+          );
+          // Continue with MongoDB deletion even if ImageKit fails
+        }
+      }
     }
 
+    // Delete from MongoDB
     await fileModel.findByIdAndDelete(fileId);
 
-    return res.json({ message: "File deleted successfully" });
+    return res.json({
+      success: true,
+      message:
+        file.type === "folder"
+          ? "Folder deleted successfully"
+          : "File deleted successfully",
+    });
   } catch (error) {
     console.error("Delete file error:", error.message);
     res.status(500).json({ message: "Server error", error: error.message });
