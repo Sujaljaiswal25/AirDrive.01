@@ -501,7 +501,9 @@ const permanentDelete = async (req, res) => {
           !childFile.fileId.startsWith("folder_")
         ) {
           try {
-            console.log(`Deleting child file from ImageKit: ${childFile.fileId}`);
+            console.log(
+              `Deleting child file from ImageKit: ${childFile.fileId}`
+            );
             await deleteFileFromImageKit(childFile.fileId);
           } catch (imagekitError) {
             console.warn(

@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, FolderPlus } from "lucide-react";
 import toast from "react-hot-toast";
 import { closeCreateFolderModal } from "../../store/slices/uiSlice";
-import { addFile } from "../../store/slices/fileSlice";
 import { fileAPI } from "../../services/file.service";
 
 const CreateFolderModal = ({ onCreateSuccess }) => {
@@ -20,10 +19,9 @@ const CreateFolderModal = ({ onCreateSuccess }) => {
   const onSubmit = async (data) => {
     try {
       const response = await fileAPI.createFolder(data.folderName);
-      dispatch(addFile(response.folder));
       toast.success("Folder created successfully!");
       handleClose();
-      onCreateSuccess();
+      onCreateSuccess(); // This will refetch fresh data from database
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to create folder");
     }

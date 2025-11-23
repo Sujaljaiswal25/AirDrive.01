@@ -22,7 +22,7 @@ const uploadFileToImageKit = async (fileBuffer, fileName) => {
     // Explicitly return only required fields
     return {
       url: result.url,
-      fileId: result.fileId,   // 🔑 ye zaroor save hoga ab
+      fileId: result.fileId, // 🔑 ye zaroor save hoga ab
       name: result.name,
       size: result.size,
       type: result.fileType,
@@ -35,7 +35,7 @@ const uploadFileToImageKit = async (fileBuffer, fileName) => {
 
 /**
  * Delete file from ImageKit
- * @param {string} fileId 
+ * @param {string} fileId
  */
 const deleteFileFromImageKit = async (fileId) => {
   try {

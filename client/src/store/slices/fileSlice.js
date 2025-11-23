@@ -100,6 +100,11 @@ const fileSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    resetFiles: (state) => {
+      state.files = [];
+      state.error = null;
+      state.loading = false;
+    },
   },
 });
 
@@ -124,6 +129,7 @@ export const {
   setLoading,
   setError,
   clearError,
+  resetFiles,
 } = fileSlice.actions;
 
 export default fileSlice.reducer;

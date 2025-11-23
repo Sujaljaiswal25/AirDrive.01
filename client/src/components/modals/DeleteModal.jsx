@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Trash2, AlertTriangle } from "lucide-react";
 import toast from "react-hot-toast";
 import { closeDeleteModal } from "../../store/slices/uiSlice";
-import { removeFile } from "../../store/slices/fileSlice";
 import { fileAPI } from "../../services/file.service";
 import { useState } from "react";
 
@@ -21,13 +20,13 @@ const DeleteModal = ({ onDeleteSuccess, isPermanent = false }) => {
         await fileAPI.permanentDelete(selectedFileForAction._id);
         toast.success("File permanently deleted!");
       } else {
-        await fileAPI.deleteFile(selectedFileForAction._id);
-        toast.success("File deleted successfully!");
+        await fileAPI.moveToTrash(selectedFileForAction._id);
+        toast.success("Moved to trash!");
       }
-      dispatch(removeFile(selectedFileForAction._id));
       handleClose();
-      onDeleteSuccess();
+      onDeleteSuccess(); // This will refetch from database
     } catch (error) {
+      console.error("Delete error:", error);
       toast.error(error.response?.data?.message || "Failed to delete file");
     } finally {
       setDeleting(false);

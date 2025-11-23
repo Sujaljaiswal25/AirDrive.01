@@ -1,10 +1,9 @@
 import { useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Upload, File, Check, Folder } from "lucide-react";
+import { X, Upload, File, Loader2, Folder, Check } from "lucide-react";
 import toast from "react-hot-toast";
 import { closeUploadModal } from "../../store/slices/uiSlice";
-import { addFile } from "../../store/slices/fileSlice";
 import { fileAPI } from "../../services/file.service";
 
 const UploadModal = ({ onUploadSuccess }) => {
@@ -62,13 +61,11 @@ const UploadModal = ({ onUploadSuccess }) => {
           );
           setUploadProgress((prev) => ({ ...prev, [file.name]: progress }));
         });
-
-        dispatch(addFile(response.file));
       }
 
       toast.success("Files uploaded successfully!");
       handleClose();
-      onUploadSuccess();
+      onUploadSuccess(); // This will refetch fresh data from database
     } catch (error) {
       toast.error(error.response?.data?.message || "Upload failed");
     } finally {

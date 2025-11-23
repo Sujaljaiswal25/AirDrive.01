@@ -18,6 +18,7 @@ import {
   setLoading,
   setError,
   setPagination,
+  resetFiles,
 } from "../store/slices/fileSlice";
 
 const Dashboard = () => {
@@ -34,7 +35,9 @@ const Dashboard = () => {
   } = useSelector((state) => state.files);
   const { sidebarOpen } = useSelector((state) => state.ui);
 
+  // Clear files and fetch fresh data on mount
   useEffect(() => {
+    dispatch(resetFiles());
     fetchFiles();
   }, [currentFolder, pagination.currentPage, sortBy, sortOrder]);
 
@@ -53,6 +56,7 @@ const Dashboard = () => {
   const fetchFiles = async () => {
     try {
       dispatch(setLoading(true));
+      dispatch(resetFiles()); // Clear old data before fetching
 
       // Check if currentFolder is a category filter
       const categories = ["images", "videos", "audio", "documents"];
