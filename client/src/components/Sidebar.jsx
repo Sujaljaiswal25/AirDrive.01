@@ -136,9 +136,17 @@ const Sidebar = () => {
               <button
                 key={item.value}
                 onClick={() => dispatch(setCurrentFolder(item.value))}
-                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors ${
+                  currentFolder === item.value
+                    ? "bg-blue-50 text-blue-600"
+                    : "text-gray-700 hover:bg-gray-50"
+                }`}
               >
-                <item.icon className={`w-5 h-5 ${item.color}`} />
+                <item.icon
+                  className={`w-5 h-5 ${
+                    currentFolder === item.value ? "text-blue-600" : item.color
+                  }`}
+                />
                 <span className="font-medium">{item.label}</span>
               </button>
             ))}

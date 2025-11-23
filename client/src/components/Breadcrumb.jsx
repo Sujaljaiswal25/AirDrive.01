@@ -1,13 +1,45 @@
 import { useDispatch, useSelector } from "react-redux";
-import { ChevronRight, Home } from "lucide-react";
+import {
+  ChevronRight,
+  Home,
+  Image,
+  Video,
+  Music,
+  FileText,
+} from "lucide-react";
 import { setCurrentFolder } from "../store/slices/fileSlice";
 
 const Breadcrumb = () => {
   const dispatch = useDispatch();
   const { currentFolder, files } = useSelector((state) => state.files);
 
+  // Category mapping
+  const categoryNames = {
+    root: "All Files",
+    images: "Images",
+    videos: "Videos",
+    audio: "Audio",
+    documents: "Documents",
+    folders: "My Folders",
+    starred: "Starred",
+    trash: "Trash",
+  };
+
+  const categoryIcons = {
+    images: Image,
+    videos: Video,
+    audio: Music,
+    documents: FileText,
+  };
+
   // Build breadcrumb path
   const buildBreadcrumbPath = () => {
+    // Check if it's a category or special folder
+    if (categoryNames[currentFolder]) {
+      return [{ id: currentFolder, name: categoryNames[currentFolder] }];
+    }
+
+    // Default path starting with "All Files"
     const path = [{ id: "root", name: "All Files" }];
 
     if (currentFolder !== "root") {
@@ -29,6 +61,18 @@ const Breadcrumb = () => {
     dispatch(setCurrentFolder(folderId));
   };
 
+  // Get appropriate icon for current breadcrumb
+  const getIcon = (itemId, index) => {
+    if (index === 0 && breadcrumbPath.length === 1) {
+      const IconComponent = categoryIcons[currentFolder] || Home;
+      return <IconComponent className="w-4 h-4" />;
+    }
+    if (index === 0) {
+      return <Home className="w-4 h-4" />;
+    }
+    return null;
+  };
+
   return (
     <div className="flex items-center gap-2 text-sm bg-white px-6 py-3 border-b border-gray-200">
       {breadcrumbPath.map((item, index) => (
@@ -42,7 +86,7 @@ const Breadcrumb = () => {
                 : "text-gray-600 hover:bg-gray-100"
             }`}
           >
-            {index === 0 && <Home className="w-4 h-4" />}
+            {getIcon(item.id, index)}
             <span>{item.name}</span>
           </button>
         </div>

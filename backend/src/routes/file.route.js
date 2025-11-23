@@ -9,6 +9,10 @@ const {
   createFolder,
   shareFile,
   searchFiles,
+  toggleStar,
+  moveToTrash,
+  restoreFromTrash,
+  permanentDelete,
 } = require("../controllers/file.controller");
 const { protect } = require("../middlewares/auth.middleware");
 const upload = require("../middlewares/upload.middleware");
@@ -36,5 +40,17 @@ router.post("/share/:id", protect, shareFile);
 
 // 📌 Search / Filter files (query: name/folder)
 router.get("/search", protect, searchFiles);
+
+// 📌 Toggle star/unstar file
+router.patch("/star/:id", protect, toggleStar);
+
+// 📌 Move file to trash (soft delete)
+router.patch("/trash/:id", protect, moveToTrash);
+
+// 📌 Restore file from trash
+router.patch("/restore/:id", protect, restoreFromTrash);
+
+// 📌 Permanently delete file
+router.delete("/permanent/:id", protect, permanentDelete);
 
 module.exports = router;

@@ -58,6 +58,22 @@ const fileSchema = new mongoose.Schema(
       default: false,
       index: true,
     },
+
+    // Starred & Trash
+    isStarred: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    isTrashed: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    trashedAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
@@ -70,6 +86,8 @@ const fileSchema = new mongoose.Schema(
 // Add compound indexes for common queries
 fileSchema.index({ owner: 1, type: 1 });
 fileSchema.index({ owner: 1, folder: 1 });
+fileSchema.index({ owner: 1, isStarred: 1 });
+fileSchema.index({ owner: 1, isTrashed: 1 });
 
 const fileModel = mongoose.model("file", fileSchema);
 module.exports = fileModel;

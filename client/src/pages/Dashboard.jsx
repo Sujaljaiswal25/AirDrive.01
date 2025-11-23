@@ -53,20 +53,35 @@ const Dashboard = () => {
   const fetchFiles = async () => {
     try {
       dispatch(setLoading(true));
+
+      // Check if currentFolder is a category filter
+      const categories = ["images", "videos", "audio", "documents"];
+      const isCategory = categories.includes(currentFolder);
+
+      // For starred and trash, let backend handle it via folder parameter
+      // For categories, fetch from root and filter client-side
       const response = await fileAPI.getUserFiles({
         page: pagination.currentPage,
         limit: pagination.limit,
         sortBy,
         order: sortOrder,
-        folder: currentFolder,
+        folder: isCategory ? "root" : currentFolder, // Pass starred/trash/folders to backend
       });
 
-      dispatch(setFiles(response.files));
+      // Filter by category if needed (client-side filtering)
+      let filteredFiles = response.files;
+      if (isCategory) {
+        filteredFiles = filterByCategory(response.files, currentFolder);
+      } else if (currentFolder === "folders") {
+        filteredFiles = response.files.filter((file) => file.type === "folder");
+      }
+
+      dispatch(setFiles(filteredFiles));
       dispatch(
         setPagination({
           currentPage: response.currentPage,
           totalPages: response.totalPages,
-          totalFiles: response.totalFiles,
+          totalFiles: isCategory ? filteredFiles.length : response.totalFiles,
         })
       );
     } catch (error) {
@@ -74,6 +89,36 @@ const Dashboard = () => {
         setError(error.response?.data?.message || "Failed to fetch files")
       );
       toast.error("Failed to load files");
+    }
+  };
+
+  // Filter files by category
+  const filterByCategory = (filesList, category) => {
+    // Exclude folders and trashed items from category views
+    const validFiles = filesList.filter(
+      (file) => file.type !== "folder" && !file.isTrashed
+    );
+
+    switch (category) {
+      case "images":
+        return validFiles.filter((file) => file.type?.startsWith("image/"));
+      case "videos":
+        return validFiles.filter((file) => file.type?.startsWith("video/"));
+      case "audio":
+        return validFiles.filter((file) => file.type?.startsWith("audio/"));
+      case "documents":
+        return validFiles.filter(
+          (file) =>
+            file.type?.includes("pdf") ||
+            file.type?.includes("document") ||
+            file.type?.includes("text") ||
+            file.type?.includes("msword") ||
+            file.type?.includes("wordprocessingml") ||
+            file.type?.includes("spreadsheet") ||
+            file.type?.includes("presentation")
+        );
+      default:
+        return validFiles;
     }
   };
 
@@ -126,9 +171,9 @@ const Dashboard = () => {
               transition={{ duration: 0.3 }}
             >
               {viewMode === "grid" ? (
-                <FileGrid files={files} />
+                <FileGrid files={files} onUpdate={fetchFiles} />
               ) : (
-                <FileList files={files} />
+                <FileList files={files} onUpdate={fetchFiles} />
               )}
             </motion.div>
           )}
@@ -139,7 +184,10 @@ const Dashboard = () => {
       <UploadModal onUploadSuccess={fetchFiles} />
       <CreateFolderModal onCreateSuccess={fetchFiles} />
       <ShareModal />
-      <DeleteModal onDeleteSuccess={fetchFiles} />
+      <DeleteModal
+        onDeleteSuccess={fetchFiles}
+        isPermanent={currentFolder === "trash"}
+      />
       <PreviewModal />
     </div>
   );

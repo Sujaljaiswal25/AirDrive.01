@@ -7,7 +7,7 @@ import { removeFile } from "../../store/slices/fileSlice";
 import { fileAPI } from "../../services/file.service";
 import { useState } from "react";
 
-const DeleteModal = ({ onDeleteSuccess }) => {
+const DeleteModal = ({ onDeleteSuccess, isPermanent = false }) => {
   const dispatch = useDispatch();
   const { deleteModalOpen, selectedFileForAction } = useSelector(
     (state) => state.ui
@@ -17,9 +17,14 @@ const DeleteModal = ({ onDeleteSuccess }) => {
   const handleDelete = async () => {
     try {
       setDeleting(true);
-      await fileAPI.deleteFile(selectedFileForAction._id);
+      if (isPermanent) {
+        await fileAPI.permanentDelete(selectedFileForAction._id);
+        toast.success("File permanently deleted!");
+      } else {
+        await fileAPI.deleteFile(selectedFileForAction._id);
+        toast.success("File deleted successfully!");
+      }
       dispatch(removeFile(selectedFileForAction._id));
-      toast.success("File deleted successfully!");
       handleClose();
       onDeleteSuccess();
     } catch (error) {

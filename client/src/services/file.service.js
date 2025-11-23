@@ -73,4 +73,30 @@ export const fileAPI = {
     const response = await axiosInstance.get(`/api/files/search?${params}`);
     return response.data;
   },
+
+  // Toggle star/unstar file
+  toggleStar: async (fileId) => {
+    const response = await axiosInstance.patch(`/api/files/star/${fileId}`);
+    return response.data;
+  },
+
+  // Move file to trash
+  moveToTrash: async (fileId) => {
+    const response = await axiosInstance.patch(`/api/files/trash/${fileId}`);
+    return response.data;
+  },
+
+  // Restore file from trash
+  restoreFromTrash: async (fileId) => {
+    const response = await axiosInstance.patch(`/api/files/restore/${fileId}`);
+    return response.data;
+  },
+
+  // Permanently delete file
+  permanentDelete: async (fileId) => {
+    const response = await axiosInstance.delete(
+      `/api/files/permanent/${fileId}`
+    );
+    return response.data;
+  },
 };
