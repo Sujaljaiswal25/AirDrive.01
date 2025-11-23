@@ -468,6 +468,8 @@ const permanentDelete = async (req, res) => {
       return res.status(403).json({ message: "Not authorized" });
     }
 
+    console.log(`Permanently deleting file: ${file.name} (ID: ${file._id})`);
+
     // Delete from ImageKit if it's a file (not folder)
     if (
       file.type !== "folder" &&
@@ -475,7 +477,9 @@ const permanentDelete = async (req, res) => {
       !file.fileId.startsWith("folder_")
     ) {
       try {
+        console.log(`Deleting from ImageKit: ${file.fileId}`);
         await deleteFileFromImageKit(file.fileId);
+        console.log(`Successfully deleted from ImageKit: ${file.fileId}`);
       } catch (imagekitError) {
         console.warn("ImageKit deletion failed:", imagekitError.message);
       }
@@ -488,6 +492,8 @@ const permanentDelete = async (req, res) => {
         folder: file._id,
       });
 
+      console.log(`Deleting ${filesInFolder.length} files from folder`);
+
       for (const childFile of filesInFolder) {
         if (
           childFile.type !== "folder" &&
@@ -495,6 +501,7 @@ const permanentDelete = async (req, res) => {
           !childFile.fileId.startsWith("folder_")
         ) {
           try {
+            console.log(`Deleting child file from ImageKit: ${childFile.fileId}`);
             await deleteFileFromImageKit(childFile.fileId);
           } catch (imagekitError) {
             console.warn(
@@ -509,12 +516,14 @@ const permanentDelete = async (req, res) => {
 
     // Delete from MongoDB
     await fileModel.findByIdAndDelete(file._id);
+    console.log(`Successfully deleted from MongoDB: ${file._id}`);
 
     res.json({
       success: true,
       message: "File permanently deleted",
     });
   } catch (error) {
+    console.error("Permanent delete error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };

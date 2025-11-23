@@ -43,10 +43,13 @@ const deleteFileFromImageKit = async (fileId) => {
       throw new Error("Missing fileId for delete request");
     }
 
-    await imagekit.deleteFile(fileId);
-    return true;
+    console.log(`🗑️ Attempting to delete file from ImageKit: ${fileId}`);
+    const result = await imagekit.deleteFile(fileId);
+    console.log(`✅ Successfully deleted from ImageKit: ${fileId}`);
+    return result;
   } catch (err) {
     console.error("❌ ImageKit Delete Error:", err.message);
+    console.error("FileId attempted:", fileId);
     throw new Error("Image delete failed: " + err.message);
   }
 };
