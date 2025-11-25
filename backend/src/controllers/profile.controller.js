@@ -1,35 +1,56 @@
 const userModel = require("../models/user.model");
 const { uploadFileToImageKit } = require("../services/storage.service");
+const { success, error } = require("../utils/response.util");
 
+// ================== GET PROFILE ==================
 const getProfile = async (req, res) => {
   try {
     const user = await userModel.findById(req.user._id).select("-password");
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+
+    if (!user) {
+      return error(res, "User not found", 404);
+    }
+
+    return success(res, { user });
+  } catch (err) {
+    console.error("Get profile error:", err);
+    return error(res, err.message);
   }
 };
 
+// ================== UPDATE PROFILE ==================
 const updateProfile = async (req, res) => {
   try {
     const { name } = req.body;
-    const updates = { name };
+    const updates = {};
 
-    if (req.file) {
-      const result = await uploadFileToImageKit(
-        req.file.buffer,
-        "avatar-" + req.user._id
-      );
-      updates.avatar = result.url;
+    // Update name if provided
+    if (name?.trim()) {
+      updates.name = name.trim();
     }
 
+    // Upload new avatar if provided
+    if (req.file) {
+      const avatarResult = await uploadFileToImageKit(
+        req.file.buffer,
+        `avatar-${req.user._id}`
+      );
+      updates.avatar = avatarResult.url;
+    }
+
+    // Update user
     const user = await userModel
       .findByIdAndUpdate(req.user._id, updates, { new: true })
       .select("-password");
 
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    if (!user) {
+      return error(res, "User not found", 404);
+    }
+
+    return success(res, { user }, "Profile updated successfully");
+  } catch (err) {
+    console.error("Update profile error:", err);
+    return error(res, err.message);
   }
 };
 

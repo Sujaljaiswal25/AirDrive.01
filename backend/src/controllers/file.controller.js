@@ -3,88 +3,119 @@ const {
   uploadFileToImageKit,
   deleteFileFromImageKit,
 } = require("../services/storage.service");
-const crypto = require("crypto");
+const {
+  success,
+  created,
+  badRequest,
+  notFound,
+  forbidden,
+  error,
+} = require("../utils/response.util");
+const {
+  generateFolderId,
+  generateShareId,
+  resolveFolderValue,
+  buildFileFilter,
+  isFolderFileId,
+  FILE_TYPE,
+} = require("../utils/file.util");
+const { isOwner, sanitizeFileName } = require("../utils/validation.util");
 
-// Helper Functions
-const validateOwnership = (file, userId) => {
-  if (!file) return { error: "File not found", code: 404 };
-  if (file.owner.toString() !== userId.toString()) {
+// ================== HELPER FUNCTIONS ==================
+
+// Verify file ownership
+const verifyOwnership = async (fileId, userId) => {
+  const file = await fileModel.findById(fileId);
+
+  if (!file) {
+    return { error: "File not found", code: 404 };
+  }
+
+  if (!isOwner(file, userId)) {
     return { error: "Not authorized", code: 403 };
   }
-  return null;
+
+  return { file };
 };
 
-// 📌 Upload file (with folder support)
+// Delete file from ImageKit (with error handling)
+const deleteFromImageKit = async (fileId, fileName) => {
+  if (!fileId || isFolderFileId(fileId)) {
+    return; // Skip for folders
+  }
+
+  try {
+    await deleteFileFromImageKit(fileId);
+    console.log(`Deleted from ImageKit: ${fileName}`);
+  } catch (err) {
+    console.warn(`ImageKit deletion failed for ${fileName}:`, err.message);
+  }
+};
+
+// Recursively delete folder contents
+const deleteFolderContents = async (folderId, userId) => {
+  const filesInFolder = await fileModel.find({
+    owner: userId,
+    folder: folderId,
+  });
+
+  for (const file of filesInFolder) {
+    await deleteFromImageKit(file.fileId, file.name);
+    await fileModel.findByIdAndDelete(file._id);
+  }
+
+  return filesInFolder.length;
+};
+
+// ================== UPLOAD FILE ==================
 const uploadFile = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
+      return badRequest(res, "No file uploaded");
     }
 
     const { originalname, mimetype, size, buffer } = req.file;
-    const { folderId } = req.body; // Get folderId from request
+    const { folderId } = req.body;
 
-    // Define special folder values that should be treated as root
-    const specialFolders = [
-      "root",
-      "images",
-      "videos",
-      "audio",
-      "documents",
-      "folders",
-      "starred",
-      "trash",
-    ];
-
-    // If folderId provided and not a special value, verify folder exists and belongs to user
-    if (folderId && !specialFolders.includes(folderId)) {
+    // Verify folder exists if provided
+    const folderValue = resolveFolderValue(folderId);
+    if (folderId && folderValue !== "root") {
       const folder = await fileModel.findOne({
         _id: folderId,
         owner: req.user._id,
-        type: "folder",
+        type: FILE_TYPE.FOLDER,
       });
 
       if (!folder) {
-        return res.status(404).json({ message: "Folder not found" });
+        return notFound(res, "Folder not found");
       }
     }
 
-    // ✅ Upload to ImageKit
-    const result = await uploadFileToImageKit(buffer, originalname);
-
-    if (!result || !result.fileId) {
-      return res.status(500).json({ message: "ImageKit upload failed" });
+    // Upload to ImageKit
+    const uploadResult = await uploadFileToImageKit(buffer, originalname);
+    if (!uploadResult?.fileId) {
+      return error(res, "ImageKit upload failed");
     }
 
-    // ✅ Save in MongoDB with folder reference
-    // If folderId is a special value or not provided, use "root"
-    const folderValue =
-      folderId && !specialFolders.includes(folderId) ? folderId : "root";
-
+    // Save to database
     const file = await fileModel.create({
       name: originalname,
       type: mimetype,
       size,
-      url: result.url,
-      fileId: result.fileId,
+      url: uploadResult.url,
+      fileId: uploadResult.fileId,
       owner: req.user._id,
       folder: folderValue,
     });
 
-    return res.status(201).json({
-      message: "File uploaded successfully",
-      file,
-    });
-  } catch (error) {
-    console.error("Upload error:", error);
-    res.status(500).json({
-      message: "Upload failed",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined,
-    });
+    return created(res, { file }, "File uploaded successfully");
+  } catch (err) {
+    console.error("Upload error:", err);
+    return error(res, "Upload failed");
   }
 };
 
-// 📌 Get all files of logged-in user (with pagination + folder filter)
+// ================== GET USER FILES ==================
 const getUserFiles = async (req, res) => {
   try {
     const {
@@ -93,440 +124,336 @@ const getUserFiles = async (req, res) => {
       sortBy = "createdAt",
       order = "desc",
       folder,
+      search,
     } = req.query;
 
-    let filter = { owner: req.user._id };
+    // Build filter
+    const filter = buildFileFilter(req.user._id, {
+      folder,
+      starred: folder === "starred",
+      trashed: folder === "trash",
+      search,
+    });
 
-    // Define special folder values that should be treated as root
-    const specialFolders = [
-      "root",
-      "images",
-      "videos",
-      "audio",
-      "documents",
-      "folders",
-      "starred",
-      "trash",
-    ];
-
-    // Handle special views
-    if (folder === "starred") {
-      filter.isStarred = true;
-      filter.isTrashed = { $ne: true }; // Explicitly check for not true (handles undefined)
-      console.log("Fetching starred files");
-    } else if (folder === "trash") {
-      filter.isTrashed = true; // Only get explicitly trashed items
-      console.log("Fetching trashed files");
-    } else if (folder && !specialFolders.includes(folder)) {
-      // Regular folder - show non-trashed items only
-      filter.folder = folder;
-      filter.isTrashed = { $ne: true }; // Explicitly check for not true (handles undefined)
-      console.log("Fetching files in folder:", folder);
-    } else {
-      // Show root level: items with folder="root" or no folder field (for backwards compatibility)
-      // Exclude trashed items from normal views
-      filter.$or = [{ folder: "root" }, { folder: { $exists: false } }];
-      filter.isTrashed = { $ne: true }; // Explicitly check for not true (handles undefined)
-      console.log("Fetching root-level files and folders");
-    }
-
+    // Fetch files with pagination
     const files = await fileModel
       .find(filter)
       .sort({ [sortBy]: order === "desc" ? -1 : 1 })
       .skip((page - 1) * limit)
       .limit(Number(limit));
 
-    console.log(
-      `Found ${files.length} items (${
-        files.filter((f) => f.type === "folder").length
-      } folders)`
-    );
-
     const totalFiles = await fileModel.countDocuments(filter);
 
-    return res.json({
-      success: true,
+    return success(res, {
+      files,
       count: files.length,
       totalFiles,
       currentPage: Number(page),
       totalPages: Math.ceil(totalFiles / limit),
-      files,
     });
-  } catch (error) {
-    console.error("Fetch error:", error);
-    res
-      .status(500)
-      .json({ message: "Failed to fetch files", error: error.message });
+  } catch (err) {
+    console.error("Fetch error:", err);
+    return error(res, "Failed to fetch files");
   }
 };
 
-// 📌 Delete file (ImageKit + MongoDB)
+// ================== DELETE FILE ==================
 const deleteFile = async (req, res) => {
   try {
-    const fileId = req.params.id;
-    const userId = req.user._id;
+    const { error: ownershipError, file } = await verifyOwnership(
+      req.params.id,
+      req.user._id
+    );
 
-    const file = await fileModel.findById(fileId);
-    if (!file) return res.status(404).json({ message: "File not found" });
-
-    if (file.owner.toString() !== userId.toString()) {
-      return res.status(401).json({ message: "Not authorized" });
+    if (ownershipError) {
+      return ownershipError.code === 404
+        ? notFound(res, ownershipError.error)
+        : forbidden(res, ownershipError.error);
     }
 
-    // If it's a folder, delete all files inside it first
-    if (file.type === "folder") {
-      const filesInFolder = await fileModel.find({
-        owner: userId,
-        folder: fileId,
-      });
-
-      // Delete each file in the folder from ImageKit and MongoDB
-      for (const childFile of filesInFolder) {
-        if (
-          childFile.type !== "folder" &&
-          childFile.fileId &&
-          !childFile.fileId.startsWith("folder_")
-        ) {
-          try {
-            await deleteFileFromImageKit(childFile.fileId);
-          } catch (imagekitError) {
-            console.warn(
-              `ImageKit deletion failed for ${childFile.name}:`,
-              imagekitError.message
-            );
-          }
-        }
-        await fileModel.findByIdAndDelete(childFile._id);
-      }
+    // Delete folder contents if it's a folder
+    if (file.type === FILE_TYPE.FOLDER) {
+      await deleteFolderContents(file._id, req.user._id);
     } else {
-      // Only delete from ImageKit if it's not a folder and has a valid fileId
-      if (file.fileId && !file.fileId.startsWith("folder_")) {
-        try {
-          await deleteFileFromImageKit(file.fileId);
-        } catch (imagekitError) {
-          console.warn(
-            "ImageKit deletion failed (file may not exist):",
-            imagekitError.message
-          );
-          // Continue with MongoDB deletion even if ImageKit fails
-        }
-      }
+      await deleteFromImageKit(file.fileId, file.name);
     }
 
-    // Delete from MongoDB
-    await fileModel.findByIdAndDelete(fileId);
+    // Delete the file/folder itself
+    await fileModel.findByIdAndDelete(file._id);
 
-    return res.json({
-      success: true,
-      message:
-        file.type === "folder"
-          ? "Folder deleted successfully"
-          : "File deleted successfully",
-    });
-  } catch (error) {
-    console.error("Delete file error:", error.message);
-    res.status(500).json({ message: "Server error", error: error.message });
+    const message =
+      file.type === FILE_TYPE.FOLDER
+        ? "Folder deleted successfully"
+        : "File deleted successfully";
+
+    return success(res, {}, message);
+  } catch (err) {
+    console.error("Delete error:", err);
+    return error(res, "Failed to delete");
   }
 };
 
-// 📌 Preview file (return URL)
+// ================== PREVIEW FILE ==================
 const previewFile = async (req, res) => {
   try {
-    const file = await fileModel.findById(req.params.id);
-    if (!file) return res.status(404).json({ message: "File not found" });
+    const { error: ownershipError, file } = await verifyOwnership(
+      req.params.id,
+      req.user._id
+    );
 
-    if (file.owner.toString() !== req.user._id.toString()) {
-      return res.status(401).json({ message: "Not authorized" });
+    if (ownershipError) {
+      return ownershipError.code === 404
+        ? notFound(res, ownershipError.error)
+        : forbidden(res, ownershipError.error);
     }
 
-    return res.json({
-      message: "File preview fetched",
-      file,
-    });
-  } catch (error) {
-    console.error("Preview error:", error.message);
-    res.status(500).json({ message: "Server error", error: error.message });
+    return success(res, { file }, "File preview fetched");
+  } catch (err) {
+    console.error("Preview error:", err);
+    return error(res, "Failed to preview file");
   }
 };
 
-// 📌 Download file (redirect to ImageKit URL)
+// ================== DOWNLOAD FILE ==================
 const downloadFile = async (req, res) => {
   try {
-    const file = await fileModel.findById(req.params.id);
-    if (!file) return res.status(404).json({ message: "File not found" });
+    const { error: ownershipError, file } = await verifyOwnership(
+      req.params.id,
+      req.user._id
+    );
 
-    if (file.owner.toString() !== req.user._id.toString()) {
-      return res.status(401).json({ message: "Not authorized" });
+    if (ownershipError) {
+      return ownershipError.code === 404
+        ? notFound(res, ownershipError.error)
+        : forbidden(res, ownershipError.error);
     }
 
     return res.redirect(file.url);
-  } catch (error) {
-    console.error("Download error:", error.message);
-    res.status(500).json({ message: "Server error", error: error.message });
+  } catch (err) {
+    console.error("Download error:", err);
+    return error(res, "Failed to download file");
   }
 };
 
-// 📌 Create Folder
+// ================== CREATE FOLDER ==================
 const createFolder = async (req, res) => {
   try {
     const { folderName } = req.body;
+
     if (!folderName?.trim()) {
-      return res.status(400).json({ message: "Folder name required" });
+      return badRequest(res, "Folder name required");
     }
 
-    const normalizedName = folderName.trim();
+    const name = sanitizeFileName(folderName);
 
-    // Check if folder already exists for this user
+    // Check if folder exists
     const exists = await fileModel.findOne({
       owner: req.user._id,
-      name: normalizedName,
-      type: "folder",
+      name,
+      type: FILE_TYPE.FOLDER,
     });
 
     if (exists) {
-      return res.status(400).json({ message: "Folder already exists" });
+      return badRequest(res, "Folder already exists");
     }
 
-    // Create folder entry in database
+    // Create folder
     const folder = await fileModel.create({
-      name: normalizedName,
-      type: "folder",
+      name,
+      type: FILE_TYPE.FOLDER,
       size: 0,
       url: "#",
-      fileId: `folder_${crypto.randomBytes(4).toString("hex")}`,
+      fileId: generateFolderId(),
       owner: req.user._id,
-      folder: "root", // Folders are created at root level
+      folder: "root",
     });
 
-    return res.status(201).json({
-      success: true,
-      message: "Folder created successfully",
-      folder,
-    });
-  } catch (error) {
-    console.error("Folder creation error:", error);
-    res.status(500).json({ message: "Failed to create folder" });
+    return created(res, { folder }, "Folder created successfully");
+  } catch (err) {
+    console.error("Folder creation error:", err);
+    return error(res, "Failed to create folder");
   }
 };
 
-// 📌 Share File
+// ================== SHARE FILE ==================
 const shareFile = async (req, res) => {
   try {
-    const file = await fileModel.findById(req.params.id);
-    if (!file) {
-      return res.status(404).json({ message: "File not found" });
+    const { error: ownershipError, file } = await verifyOwnership(
+      req.params.id,
+      req.user._id
+    );
+
+    if (ownershipError) {
+      return ownershipError.code === 404
+        ? notFound(res, ownershipError.error)
+        : forbidden(res, ownershipError.error);
     }
 
-    if (file.owner.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "Not authorized" });
-    }
-
-    const shareId = crypto.randomBytes(8).toString("hex");
-    file.shareId = shareId;
+    // Generate share ID
+    file.shareId = generateShareId();
     file.isShared = true;
     await file.save();
 
-    const shareLink = `${process.env.FRONTEND_URL}/shared/${shareId}`;
+    const shareLink = `${process.env.FRONTEND_URL}/shared/${file.shareId}`;
 
-    res.json({
-      message: "File shared successfully",
-      shareLink,
-      shareId,
-    });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Failed to share file", error: error.message });
+    return success(
+      res,
+      { shareLink, shareId: file.shareId },
+      "File shared successfully"
+    );
+  } catch (err) {
+    console.error("Share error:", err);
+    return error(res, "Failed to share file");
   }
 };
 
-// Add a new route to get shared file
+// ================== GET SHARED FILE ==================
 const getSharedFile = async (req, res) => {
   try {
     const file = await fileModel.findOne({ shareId: req.params.shareId });
+
     if (!file || !file.isShared) {
-      return res.status(404).json({ message: "Shared file not found" });
+      return notFound(res, "Shared file not found");
     }
 
-    res.json({ file });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Failed to get shared file", error: error.message });
+    return success(res, { file });
+  } catch (err) {
+    console.error("Get shared file error:", err);
+    return error(res, "Failed to get shared file");
   }
 };
 
-// 📌 Search / Filter Files
+// ================== SEARCH FILES ==================
 const searchFiles = async (req, res) => {
   try {
     const { query, folder } = req.query;
-    let filter = { owner: req.user._id, isTrashed: false }; // Exclude trashed files from search
 
-    if (folder) filter.folder = folder;
-    if (query) filter.name = { $regex: query, $options: "i" };
+    const filter = buildFileFilter(req.user._id, {
+      folder,
+      search: query,
+      trashed: false,
+    });
 
     const files = await fileModel.find(filter).sort({ createdAt: -1 });
 
-    res.json({ success: true, count: files.length, files });
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    return success(res, { files, count: files.length });
+  } catch (err) {
+    console.error("Search error:", err);
+    return error(res, "Search failed");
   }
 };
 
-// 📌 Toggle Star/Unstar File
+// ================== TOGGLE STAR ==================
 const toggleStar = async (req, res) => {
   try {
-    const file = await fileModel.findById(req.params.id);
-    if (!file) {
-      return res.status(404).json({ message: "File not found" });
-    }
+    const { error: ownershipError, file } = await verifyOwnership(
+      req.params.id,
+      req.user._id
+    );
 
-    if (file.owner.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "Not authorized" });
+    if (ownershipError) {
+      return ownershipError.code === 404
+        ? notFound(res, ownershipError.error)
+        : forbidden(res, ownershipError.error);
     }
 
     file.isStarred = !file.isStarred;
     await file.save();
 
-    res.json({
-      success: true,
-      message: file.isStarred ? "File starred" : "File unstarred",
-      isStarred: file.isStarred,
-    });
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    const message = file.isStarred ? "File starred" : "File unstarred";
+    return success(res, { isStarred: file.isStarred }, message);
+  } catch (err) {
+    console.error("Toggle star error:", err);
+    return error(res, "Failed to toggle star");
   }
 };
 
-// 📌 Move File to Trash (Soft Delete)
+// ================== MOVE TO TRASH ==================
 const moveToTrash = async (req, res) => {
   try {
-    const file = await fileModel.findById(req.params.id);
-    if (!file) {
-      return res.status(404).json({ message: "File not found" });
-    }
+    const { error: ownershipError, file } = await verifyOwnership(
+      req.params.id,
+      req.user._id
+    );
 
-    if (file.owner.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "Not authorized" });
+    if (ownershipError) {
+      return ownershipError.code === 404
+        ? notFound(res, ownershipError.error)
+        : forbidden(res, ownershipError.error);
     }
 
     file.isTrashed = true;
     file.trashedAt = new Date();
     await file.save();
 
-    console.log(`File ${file.name} moved to trash by user ${req.user._id}`);
-
-    res.json({
-      success: true,
-      message: "File moved to trash",
-    });
-  } catch (error) {
-    console.error("Move to trash error:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.log(`File ${file.name} moved to trash`);
+    return success(res, {}, "File moved to trash");
+  } catch (err) {
+    console.error("Move to trash error:", err);
+    return error(res, "Failed to move to trash");
   }
 };
 
-// 📌 Restore File from Trash
+// ================== RESTORE FROM TRASH ==================
 const restoreFromTrash = async (req, res) => {
   try {
-    const file = await fileModel.findById(req.params.id);
-    if (!file) {
-      return res.status(404).json({ message: "File not found" });
-    }
+    const { error: ownershipError, file } = await verifyOwnership(
+      req.params.id,
+      req.user._id
+    );
 
-    if (file.owner.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "Not authorized" });
+    if (ownershipError) {
+      return ownershipError.code === 404
+        ? notFound(res, ownershipError.error)
+        : forbidden(res, ownershipError.error);
     }
 
     if (!file.isTrashed) {
-      return res.status(400).json({ message: "File is not in trash" });
+      return badRequest(res, "File is not in trash");
     }
 
     file.isTrashed = false;
     file.trashedAt = null;
     await file.save();
 
-    res.json({
-      success: true,
-      message: "File restored from trash",
-      file,
-    });
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    return success(res, { file }, "File restored from trash");
+  } catch (err) {
+    console.error("Restore error:", err);
+    return error(res, "Failed to restore file");
   }
 };
 
-// 📌 Permanently Delete File (from trash)
+// ================== PERMANENT DELETE ==================
 const permanentDelete = async (req, res) => {
   try {
-    const file = await fileModel.findById(req.params.id);
-    if (!file) {
-      return res.status(404).json({ message: "File not found" });
+    const { error: ownershipError, file } = await verifyOwnership(
+      req.params.id,
+      req.user._id
+    );
+
+    if (ownershipError) {
+      return ownershipError.code === 404
+        ? notFound(res, ownershipError.error)
+        : forbidden(res, ownershipError.error);
     }
 
-    if (file.owner.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "Not authorized" });
+    console.log(`Permanently deleting: ${file.name}`);
+
+    // Delete folder contents if folder
+    if (file.type === FILE_TYPE.FOLDER) {
+      await deleteFolderContents(file._id, req.user._id);
+    } else {
+      await deleteFromImageKit(file.fileId, file.name);
     }
 
-    console.log(`Permanently deleting file: ${file.name} (ID: ${file._id})`);
-
-    // Delete from ImageKit if it's a file (not folder)
-    if (
-      file.type !== "folder" &&
-      file.fileId &&
-      !file.fileId.startsWith("folder_")
-    ) {
-      try {
-        console.log(`Deleting from ImageKit: ${file.fileId}`);
-        await deleteFileFromImageKit(file.fileId);
-        console.log(`Successfully deleted from ImageKit: ${file.fileId}`);
-      } catch (imagekitError) {
-        console.warn("ImageKit deletion failed:", imagekitError.message);
-      }
-    }
-
-    // If it's a folder, delete all files inside
-    if (file.type === "folder") {
-      const filesInFolder = await fileModel.find({
-        owner: req.user._id,
-        folder: file._id,
-      });
-
-      console.log(`Deleting ${filesInFolder.length} files from folder`);
-
-      for (const childFile of filesInFolder) {
-        if (
-          childFile.type !== "folder" &&
-          childFile.fileId &&
-          !childFile.fileId.startsWith("folder_")
-        ) {
-          try {
-            console.log(
-              `Deleting child file from ImageKit: ${childFile.fileId}`
-            );
-            await deleteFileFromImageKit(childFile.fileId);
-          } catch (imagekitError) {
-            console.warn(
-              `ImageKit deletion failed for ${childFile.name}:`,
-              imagekitError.message
-            );
-          }
-        }
-        await fileModel.findByIdAndDelete(childFile._id);
-      }
-    }
-
-    // Delete from MongoDB
+    // Delete from database
     await fileModel.findByIdAndDelete(file._id);
-    console.log(`Successfully deleted from MongoDB: ${file._id}`);
+    console.log(`Successfully deleted: ${file.name}`);
 
-    res.json({
-      success: true,
-      message: "File permanently deleted",
-    });
-  } catch (error) {
-    console.error("Permanent delete error:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    return success(res, {}, "File permanently deleted");
+  } catch (err) {
+    console.error("Permanent delete error:", err);
+    return error(res, "Failed to delete permanently");
   }
 };
 

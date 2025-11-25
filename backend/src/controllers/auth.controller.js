@@ -1,71 +1,63 @@
 const userModel = require("../models/user.model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { uploadFile } = require("../services/storage.service");
+const {
+  generateTokenPair,
+  setRefreshTokenCookie,
+  clearRefreshTokenCookie,
+  sanitizeUser,
+  generateAccessToken,
+} = require("../utils/auth.util");
+const {
+  badRequest,
+  created,
+  success,
+  unauthorized,
+  notFound,
+  forbidden,
+  error,
+} = require("../utils/response.util");
 
-// Helper function: generate tokens
-const generateTokens = (user) => {
-  const payload = {
-    id: user._id,
-    email: user.email,
-    role: user.role || "user",
-  };
-
-  const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
-    expiresIn: "15m",
-  });
-  const refreshToken = jwt.sign(
-    { id: user._id },
-    process.env.JWT_REFRESH_SECRET,
-    { expiresIn: "7d" }
-  );
-
-  return { accessToken, refreshToken };
-};
+// Default avatar URL
+const DEFAULT_AVATAR =
+  "https://i.pinimg.com/1200x/4e/7c/53/4e7c53e7d136ab654ec3b004eeec3e72.jpg";
 
 // ================== REGISTER ==================
 const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    const isUserExist = await userModel.findOne({ email });
-    if (isUserExist)
-      return res.status(400).json({ message: "User already exists" });
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Handle optional avatar
-    let avatarUrl =
-      "https://i.pinimg.com/1200x/4e/7c/53/4e7c53e7d136ab654ec3b004eeec3e72.jpg"; // default avatar
-    if (req.file) {
-      // const avatarResult = await uploadFile(req.file.buffer, Date.now() + "-avatar.png");
-      // avatarUrl = avatarResult.url;
+    // Check if user exists
+    const existingUser = await userModel.findOne({ email });
+    if (existingUser) {
+      return badRequest(res, "User already exists");
     }
 
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user
     const newUser = await userModel.create({
       name,
       email,
       password: hashedPassword,
-      avatar: avatarUrl,
+      avatar: DEFAULT_AVATAR,
     });
 
-    const tokens = generateTokens(newUser);
+    // Generate tokens
+    const tokens = generateTokenPair(newUser);
+    setRefreshTokenCookie(res, tokens.refreshToken);
 
-    res.cookie("refreshToken", tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    // remove password before sending response
-    const { password: _, ...userWithoutPassword } = newUser.toObject();
-
-    res
-      .status(201)
-      .json({ user: userWithoutPassword, accessToken: tokens.accessToken });
+    return created(
+      res,
+      {
+        user: sanitizeUser(newUser),
+        accessToken: tokens.accessToken,
+      },
+      "User registered successfully"
+    );
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    return error(res, err.message);
   }
 };
 
@@ -74,44 +66,42 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Find user
     const user = await userModel.findOne({ email });
-    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+    if (!user) {
+      return badRequest(res, "Invalid credentials");
+    }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(400).json({ message: "Invalid credentials" });
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return badRequest(res, "Invalid credentials");
+    }
 
-    const tokens = generateTokens(user);
+    // Generate tokens
+    const tokens = generateTokenPair(user);
+    setRefreshTokenCookie(res, tokens.refreshToken);
 
-    res.cookie("refreshToken", tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    // remove password before sending response
-    const { password: _, ...userWithoutPassword } = user.toObject();
-
-    res
-      .status(200)
-      .json({ user: userWithoutPassword, accessToken: tokens.accessToken });
+    return success(
+      res,
+      {
+        user: sanitizeUser(user),
+        accessToken: tokens.accessToken,
+      },
+      "Login successful"
+    );
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    return error(res, err.message);
   }
 };
 
 // ================== LOGOUT ==================
 const logout = async (req, res) => {
   try {
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-    });
-    res.json({ message: "Logged out successfully" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    clearRefreshTokenCookie(res);
+    return success(res, {}, "Logged out successfully");
+  } catch (err) {
+    return error(res, err.message);
   }
 };
 
@@ -120,28 +110,27 @@ const refreshToken = async (req, res) => {
   try {
     const token = req.cookies.refreshToken;
     if (!token) {
-      return res.status(401).json({ message: "No refresh token found" });
+      return unauthorized(res, "No refresh token found");
     }
 
+    // Verify refresh token
     const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+
+    // Find user
     const user = await userModel.findById(decoded.id).select("-password");
-
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return notFound(res, "User not found");
     }
 
-    const accessToken = jwt.sign(
-      { id: user._id, email: user.email, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "15m" }
-    );
+    // Generate new access token
+    const accessToken = generateAccessToken(user);
 
-    res.json({ accessToken });
-  } catch (error) {
-    if (error.name === "JsonWebTokenError") {
-      return res.status(403).json({ message: "Invalid refresh token" });
+    return success(res, { accessToken }, "Token refreshed");
+  } catch (err) {
+    if (err.name === "JsonWebTokenError") {
+      return forbidden(res, "Invalid refresh token");
     }
-    res.status(500).json({ message: error.message });
+    return error(res, err.message);
   }
 };
 
