@@ -147,27 +147,51 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-dark-bg overflow-hidden">
       {/* Sidebar */}
-      <AnimatePresence>{sidebarOpen && <Sidebar />}</AnimatePresence>
+      <Sidebar />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header onRefresh={fetchFiles} />
         <Breadcrumb />
 
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
           {loading ? (
             <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+              <div className="relative">
+                <div className="w-16 h-16 border-4 border-dark-border rounded-full"></div>
+                <div className="w-16 h-16 border-4 border-accent-primary border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
+              </div>
             </div>
           ) : files.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64 text-gray-500">
-              <p className="text-lg">No files found</p>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center justify-center h-64 text-dark-text-secondary"
+            >
+              <div className="w-20 h-20 bg-dark-card rounded-full flex items-center justify-center mb-4">
+                <svg
+                  className="w-10 h-10 text-dark-text-muted"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+              <p className="text-lg font-medium text-dark-text-primary">
+                No files found
+              </p>
               <p className="text-sm mt-2">
                 Upload your first file to get started
               </p>
-            </div>
+            </motion.div>
           ) : (
             <motion.div
               initial={{ opacity: 0 }}

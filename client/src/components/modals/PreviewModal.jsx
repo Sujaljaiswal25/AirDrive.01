@@ -61,12 +61,12 @@ const PreviewModal = () => {
 
     return (
       <div className="text-center py-12">
-        <p className="text-gray-600 mb-4">
+        <p className="text-dark-text-secondary mb-4">
           Preview not available for this file type
         </p>
         <button
           onClick={handleDownload}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="btn-primary px-6 py-2 rounded-lg"
         >
           Download to View
         </button>
@@ -109,19 +109,19 @@ const PreviewModal = () => {
               <div className="flex items-center gap-2 ml-4">
                 <button
                   onClick={handleShare}
-                  className="p-2 bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-colors"
+                  className="p-2.5 bg-dark-card/50 hover:bg-dark-card rounded-lg transition-colors backdrop-blur-sm border border-dark-border"
                 >
                   <Share2 className="w-5 h-5 text-white" />
                 </button>
                 <button
                   onClick={handleDownload}
-                  className="p-2 bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-colors"
+                  className="p-2.5 bg-dark-card/50 hover:bg-dark-card rounded-lg transition-colors backdrop-blur-sm border border-dark-border"
                 >
                   <Download className="w-5 h-5 text-white" />
                 </button>
                 <button
                   onClick={handleClose}
-                  className="p-2 bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-colors"
+                  className="p-2.5 bg-dark-card/50 hover:bg-dark-card rounded-lg transition-colors backdrop-blur-sm border border-dark-border"
                 >
                   <X className="w-5 h-5 text-white" />
                 </button>

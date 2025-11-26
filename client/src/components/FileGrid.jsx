@@ -52,17 +52,43 @@ const FileCard = ({ file, onUpdate }) => {
 
   const getFileIcon = () => {
     if (file.type === "folder")
-      return <Folder className="w-8 h-8 text-yellow-500" />;
+      return {
+        icon: <Folder className="w-10 h-10 text-accent-warning" />,
+        label: "Folder",
+        color: "bg-accent-warning/10",
+      };
     if (file.type?.startsWith("image/"))
-      return <Image className="w-8 h-8 text-green-500" />;
+      return {
+        icon: <Image className="w-10 h-10 text-accent-success" />,
+        label: "Image",
+        color: "bg-accent-success/10",
+      };
     if (file.type?.startsWith("video/"))
-      return <Video className="w-8 h-8 text-purple-500" />;
+      return {
+        icon: <Video className="w-10 h-10 text-purple-500" />,
+        label: "Video",
+        color: "bg-purple-500/10",
+      };
     if (file.type?.startsWith("audio/"))
-      return <Music className="w-8 h-8 text-pink-500" />;
+      return {
+        icon: <Music className="w-10 h-10 text-pink-500" />,
+        label: "Audio",
+        color: "bg-pink-500/10",
+      };
     if (file.type?.includes("pdf") || file.type?.includes("document"))
-      return <FileText className="w-8 h-8 text-blue-500" />;
-    return <File className="w-8 h-8 text-gray-500" />;
+      return {
+        icon: <FileText className="w-10 h-10 text-blue-500" />,
+        label: "Document",
+        color: "bg-blue-500/10",
+      };
+    return {
+      icon: <File className="w-10 h-10 text-gray-500" />,
+      label: "File",
+      color: "bg-gray-500/10",
+    };
   };
+
+  const fileIcon = getFileIcon();
 
   const handleDownload = () => {
     window.open(file.url, "_blank");
@@ -126,11 +152,20 @@ const FileCard = ({ file, onUpdate }) => {
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.2 }}
-      className="group relative bg-white rounded-xl border border-gray-200 p-4 hover:shadow-lg transition-all cursor-pointer"
+      className="group relative bg-dark-card hover:bg-dark-hover border border-dark-border hover:border-accent-primary/30 rounded-xl p-3 cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-accent-primary/5"
       onClick={handleCardClick}
     >
+      {/* Star Badge */}
+      {isStarred && (
+        <div className="absolute top-2 left-2 z-10">
+          <Star className="w-4 h-4 fill-accent-warning text-accent-warning" />
+        </div>
+      )}
+
       {/* Thumbnail or Icon */}
-      <div className="aspect-square rounded-lg bg-gray-50 flex items-center justify-center mb-3 overflow-hidden">
+      <div
+        className={`aspect-square rounded-lg ${fileIcon.color} flex items-center justify-center mb-3 overflow-hidden border border-dark-border/50`}
+      >
         {file.type?.startsWith("image/") ? (
           <img
             src={file.url}
@@ -138,21 +173,72 @@ const FileCard = ({ file, onUpdate }) => {
             className="w-full h-full object-cover"
           />
         ) : (
-          getFileIcon()
+          <div className="flex flex-col items-center gap-2">
+            {fileIcon.icon}
+            <span className="text-xs font-medium text-dark-text-muted">
+              {fileIcon.label}
+            </span>
+          </div>
         )}
       </div>
 
       {/* File Info */}
       <div className="space-y-1">
-        <h3 className="font-medium text-gray-900 truncate" title={file.name}>
+        <h3
+          className="text-sm font-medium text-dark-text-primary truncate leading-snug"
+          title={file.name}
+        >
           {file.name}
         </h3>
-        <div className="flex items-center justify-between text-xs text-gray-500">
-          <span>
-            {file.type === "folder" ? "Folder" : formatFileSize(file.size)}
-          </span>
-          <span>{formatRelativeTime(file.createdAt)}</span>
+        <div className="flex items-center gap-2 text-xs text-dark-text-muted">
+          {file.type !== "folder" && (
+            <span className="px-2 py-0.5 bg-dark-hover rounded text-xs font-medium">
+              {formatFileSize(file.size)}
+            </span>
+          )}
+          <span className="text-xs">{formatRelativeTime(file.createdAt)}</span>
         </div>
+      </div>
+
+      {/* Quick Actions - Always visible on mobile, hover on desktop */}
+      <div className="flex items-center gap-1 mt-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+        {file.type !== "folder" && (
+          <>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                dispatch(openPreviewModal(file));
+              }}
+              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-dark-hover hover:bg-accent-primary/10 hover:text-accent-primary rounded-lg transition-colors text-xs font-medium"
+              title="Preview"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">View</span>
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDownload();
+              }}
+              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-dark-hover hover:bg-accent-success/10 hover:text-accent-success rounded-lg transition-colors text-xs font-medium"
+              title="Download"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Get</span>
+            </button>
+          </>
+        )}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            dispatch(openShareModal(file));
+          }}
+          className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-dark-hover hover:bg-accent-primary/10 hover:text-accent-primary rounded-lg transition-colors text-xs font-medium"
+          title="Share"
+        >
+          <Share2 className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Share</span>
+        </button>
       </div>
 
       {/* Actions Menu */}
@@ -165,30 +251,32 @@ const FileCard = ({ file, onUpdate }) => {
             e.stopPropagation();
             setShowMenu(!showMenu);
           }}
-          className="p-2 bg-white rounded-lg shadow-md hover:bg-gray-50"
+          className="p-2 bg-dark-card rounded-lg shadow-dark-md hover:bg-dark-hover border border-dark-border"
         >
-          <MoreVertical className="w-4 h-4 text-gray-600" />
+          <MoreVertical className="w-4 h-4 text-dark-text-secondary" />
         </button>
 
         {showMenu && (
-          <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+          <div className="absolute right-0 mt-2 w-48 bg-dark-card border border-dark-border rounded-lg shadow-dark-lg z-10 overflow-hidden">
             {currentFolder === "trash" ? (
               // Trash view actions
               <>
                 <button
                   onClick={handleRestore}
-                  className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-dark-hover transition-colors text-left"
                 >
-                  <Undo2 className="w-4 h-4 text-blue-600" />
-                  <span className="text-sm text-blue-600">Restore</span>
+                  <Undo2 className="w-4 h-4 text-accent-primary" />
+                  <span className="text-sm text-accent-primary">Restore</span>
                 </button>
-                <div className="border-t border-gray-200 my-1"></div>
+                <div className="border-t border-dark-border"></div>
                 <button
                   onClick={handlePermanentDelete}
-                  className="w-full flex items-center gap-3 px-4 py-2 hover:bg-red-50 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-accent-error/10 transition-colors text-left"
                 >
-                  <Trash2 className="w-4 h-4 text-red-600" />
-                  <span className="text-sm text-red-600">Delete Forever</span>
+                  <Trash2 className="w-4 h-4 text-accent-error" />
+                  <span className="text-sm text-accent-error">
+                    Delete Forever
+                  </span>
                 </button>
               </>
             ) : (
@@ -202,35 +290,39 @@ const FileCard = ({ file, onUpdate }) => {
                         dispatch(openPreviewModal(file));
                         setShowMenu(false);
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition-colors text-left"
+                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-dark-hover transition-colors text-left"
                     >
-                      <Eye className="w-4 h-4 text-gray-600" />
-                      <span className="text-sm text-gray-700">Preview</span>
+                      <Eye className="w-4 h-4 text-dark-text-secondary" />
+                      <span className="text-sm text-dark-text-primary">
+                        Preview
+                      </span>
                     </button>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDownload();
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition-colors text-left"
+                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-dark-hover transition-colors text-left"
                     >
-                      <Download className="w-4 h-4 text-gray-600" />
-                      <span className="text-sm text-gray-700">Download</span>
+                      <Download className="w-4 h-4 text-dark-text-secondary" />
+                      <span className="text-sm text-dark-text-primary">
+                        Download
+                      </span>
                     </button>
                   </>
                 )}
                 <button
                   onClick={handleStar}
-                  className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-dark-hover transition-colors text-left"
                 >
                   <Star
                     className={`w-4 h-4 ${
                       isStarred
-                        ? "fill-yellow-500 text-yellow-500"
-                        : "text-gray-600"
+                        ? "fill-accent-warning text-accent-warning"
+                        : "text-dark-text-secondary"
                     }`}
                   />
-                  <span className="text-sm text-gray-700">
+                  <span className="text-sm text-dark-text-primary">
                     {isStarred ? "Unstar" : "Star"}
                   </span>
                 </button>
@@ -240,18 +332,20 @@ const FileCard = ({ file, onUpdate }) => {
                     dispatch(openShareModal(file));
                     setShowMenu(false);
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-dark-hover transition-colors text-left"
                 >
-                  <Share2 className="w-4 h-4 text-gray-600" />
-                  <span className="text-sm text-gray-700">Share</span>
+                  <Share2 className="w-4 h-4 text-dark-text-secondary" />
+                  <span className="text-sm text-dark-text-primary">Share</span>
                 </button>
-                <div className="border-t border-gray-200 my-1"></div>
+                <div className="border-t border-dark-border"></div>
                 <button
                   onClick={handleTrash}
-                  className="w-full flex items-center gap-3 px-4 py-2 hover:bg-red-50 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-accent-error/10 transition-colors text-left"
                 >
-                  <Trash2 className="w-4 h-4 text-red-600" />
-                  <span className="text-sm text-red-600">Move to Trash</span>
+                  <Trash2 className="w-4 h-4 text-accent-error" />
+                  <span className="text-sm text-accent-error">
+                    Move to Trash
+                  </span>
                 </button>
               </>
             )}
@@ -264,7 +358,7 @@ const FileCard = ({ file, onUpdate }) => {
 
 const FileGrid = ({ files, onUpdate }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3">
       {files.map((file) => (
         <FileCard key={file._id} file={file} onUpdate={onUpdate} />
       ))}

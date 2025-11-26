@@ -89,7 +89,7 @@ const UploadModal = ({ onUploadSuccess }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={handleClose}
-            className="fixed inset-0 bg-black bg-opacity-50 z-50"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
           />
 
           {/* Modal */}
@@ -99,26 +99,26 @@ const UploadModal = ({ onUploadSuccess }) => {
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
           >
-            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col pointer-events-auto">
+            <div className="glass-dark rounded-2xl shadow-dark-xl max-w-2xl w-full max-h-[90vh] flex flex-col pointer-events-auto">
               {/* Header */}
               <div className="flex-shrink-0">
-                <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                  <h2 className="text-2xl font-bold text-gray-900">
+                <div className="flex items-center justify-between p-6 border-b border-dark-border">
+                  <h2 className="text-2xl font-bold text-dark-text-primary">
                     Upload Files
                   </h2>
                   <button
                     onClick={handleClose}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="p-2 hover:bg-dark-hover rounded-lg transition-colors"
                   >
-                    <X className="w-5 h-5 text-gray-600" />
+                    <X className="w-5 h-5 text-dark-text-secondary" />
                   </button>
                 </div>
                 {/* Destination folder info */}
-                <div className="px-6 py-3 bg-blue-50 border-b border-blue-100 flex items-center gap-2">
-                  <Folder className="w-4 h-4 text-blue-600" />
-                  <span className="text-sm text-blue-900">
+                <div className="px-6 py-3 bg-accent-primary/10 border-b border-accent-primary/20 flex items-center gap-2">
+                  <Folder className="w-4 h-4 text-accent-primary" />
+                  <span className="text-sm text-dark-text-primary">
                     Uploading to:{" "}
-                    <span className="font-semibold">
+                    <span className="font-semibold text-accent-primary">
                       {getCurrentFolderName()}
                     </span>
                   </span>
@@ -132,13 +132,13 @@ const UploadModal = ({ onUploadSuccess }) => {
                   onDrop={handleDrop}
                   onDragOver={handleDragOver}
                   onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                  className="border-2 border-dashed border-dark-border rounded-xl p-12 text-center cursor-pointer hover:border-accent-primary hover:bg-accent-primary/5 transition-colors"
                 >
-                  <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-lg font-medium text-gray-700 mb-2">
+                  <Upload className="w-12 h-12 text-dark-text-muted mx-auto mb-4" />
+                  <p className="text-lg font-medium text-dark-text-primary mb-2">
                     Drop files here or click to browse
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-dark-text-secondary">
                     Support for any file type
                   </p>
                   <input
@@ -153,22 +153,22 @@ const UploadModal = ({ onUploadSuccess }) => {
                 {/* Selected Files */}
                 {selectedFiles.length > 0 && (
                   <div className="space-y-2">
-                    <h3 className="font-semibold text-gray-900">
+                    <h3 className="font-semibold text-dark-text-primary">
                       Selected Files ({selectedFiles.length})
                     </h3>
                     <div className="max-h-48 overflow-y-auto space-y-2">
                       {selectedFiles.map((file, index) => (
                         <div
                           key={index}
-                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                          className="flex items-center justify-between p-3 bg-dark-hover rounded-lg"
                         >
                           <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <File className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                            <File className="w-5 h-5 text-dark-text-muted flex-shrink-0" />
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-900 truncate">
+                              <p className="text-sm font-medium text-dark-text-primary truncate">
                                 {file.name}
                               </p>
-                              <p className="text-xs text-gray-500">
+                              <p className="text-xs text-dark-text-muted">
                                 {(file.size / 1024 / 1024).toFixed(2)} MB
                               </p>
                             </div>
@@ -178,9 +178,9 @@ const UploadModal = ({ onUploadSuccess }) => {
                             uploadProgress[file.name] !== undefined && (
                               <div className="flex items-center gap-2">
                                 {uploadProgress[file.name] === 100 ? (
-                                  <Check className="w-5 h-5 text-green-500" />
+                                  <Check className="w-5 h-5 text-accent-success" />
                                 ) : (
-                                  <span className="text-sm font-medium text-blue-600">
+                                  <span className="text-sm font-medium text-accent-primary">
                                     {uploadProgress[file.name]}%
                                   </span>
                                 )}
@@ -194,21 +194,30 @@ const UploadModal = ({ onUploadSuccess }) => {
               </div>
 
               {/* Footer - Always visible */}
-              <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50 flex-shrink-0">
+              <div className="flex flex-col sm:flex-row items-center justify-end gap-3 p-6 border-t border-dark-border bg-dark-hover/50 flex-shrink-0">
                 <button
                   onClick={handleClose}
                   disabled={uploading}
-                  className="px-6 py-2 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-white transition-colors disabled:opacity-50"
+                  className="w-full sm:w-auto px-6 py-2 border border-dark-border rounded-lg font-medium text-dark-text-primary hover:bg-dark-card transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleUpload}
                   disabled={uploading || selectedFiles.length === 0}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="w-full sm:w-auto btn-primary px-6 py-2 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  <Upload className="w-4 h-4" />
-                  {uploading ? "Uploading..." : "Upload Files"}
+                  {uploading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4" />
+                      Upload Files
+                    </>
+                  )}
                 </button>
               </div>
             </div>

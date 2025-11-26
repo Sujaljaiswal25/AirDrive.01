@@ -130,15 +130,15 @@ const FileRow = ({ file, onUpdate }) => {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className="hover:bg-gray-50 cursor-pointer group"
+      className="hover:bg-dark-hover cursor-pointer group transition-colors"
       onClick={handleRowClick}
     >
       {/* Name */}
-      <td className="px-6 py-4">
+      <td className="px-4 lg:px-6 py-4">
         <div className="flex items-center gap-3">
           {getFileIcon()}
           <span
-            className="font-medium text-gray-900 truncate max-w-xs"
+            className="font-medium text-dark-text-primary truncate max-w-xs"
             title={file.name}
           >
             {file.name}
@@ -147,52 +147,54 @@ const FileRow = ({ file, onUpdate }) => {
       </td>
 
       {/* Type */}
-      <td className="px-6 py-4 text-sm text-gray-600">
+      <td className="hidden md:table-cell px-4 lg:px-6 py-4 text-sm text-dark-text-secondary">
         {file.type === "folder" ? "Folder" : file.type?.split("/")[0] || "File"}
       </td>
 
       {/* Size */}
-      <td className="px-6 py-4 text-sm text-gray-600">
+      <td className="hidden sm:table-cell px-4 lg:px-6 py-4 text-sm text-dark-text-secondary">
         {file.type === "folder" ? "-" : formatFileSize(file.size)}
       </td>
 
       {/* Modified */}
-      <td className="px-6 py-4 text-sm text-gray-600">
+      <td className="hidden lg:table-cell px-4 lg:px-6 py-4 text-sm text-dark-text-secondary">
         {formatDate(file.createdAt)}
       </td>
 
       {/* Actions */}
-      <td className="px-6 py-4 relative">
+      <td className="px-4 lg:px-6 py-4 relative">
         <div ref={menuRef}>
           <button
             onClick={(e) => {
               e.stopPropagation();
               setShowMenu(!showMenu);
             }}
-            className="p-2 hover:bg-gray-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+            className="p-2 hover:bg-dark-card rounded-lg opacity-0 group-hover:opacity-100 transition-all"
           >
-            <MoreVertical className="w-4 h-4 text-gray-600" />
+            <MoreVertical className="w-4 h-4 text-dark-text-secondary" />
           </button>
 
           {showMenu && (
-            <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+            <div className="absolute right-0 mt-2 w-48 bg-dark-card border border-dark-border rounded-lg shadow-dark-lg z-10 overflow-hidden">
               {currentFolder === "trash" ? (
                 // Trash view: Show restore and permanent delete
                 <>
                   <button
                     onClick={handleRestore}
-                    className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition-colors text-left"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-dark-hover transition-colors text-left"
                   >
-                    <Undo2 className="w-4 h-4 text-gray-600" />
-                    <span className="text-sm text-gray-700">Restore</span>
+                    <Undo2 className="w-4 h-4 text-accent-primary" />
+                    <span className="text-sm text-accent-primary">Restore</span>
                   </button>
-                  <div className="border-t border-gray-200 my-1"></div>
+                  <div className="border-t border-dark-border"></div>
                   <button
                     onClick={handlePermanentDelete}
-                    className="w-full flex items-center gap-3 px-4 py-2 hover:bg-red-50 transition-colors text-left"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-accent-error/10 transition-colors text-left"
                   >
-                    <Trash2 className="w-4 h-4 text-red-600" />
-                    <span className="text-sm text-red-600">Delete Forever</span>
+                    <Trash2 className="w-4 h-4 text-accent-error" />
+                    <span className="text-sm text-accent-error">
+                      Delete Forever
+                    </span>
                   </button>
                 </>
               ) : (
@@ -206,35 +208,39 @@ const FileRow = ({ file, onUpdate }) => {
                           dispatch(openPreviewModal(file));
                           setShowMenu(false);
                         }}
-                        className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition-colors text-left"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-dark-hover transition-colors text-left"
                       >
-                        <Eye className="w-4 h-4 text-gray-600" />
-                        <span className="text-sm text-gray-700">Preview</span>
+                        <Eye className="w-4 h-4 text-dark-text-secondary" />
+                        <span className="text-sm text-dark-text-primary">
+                          Preview
+                        </span>
                       </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDownload();
                         }}
-                        className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition-colors text-left"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-dark-hover transition-colors text-left"
                       >
-                        <Download className="w-4 h-4 text-gray-600" />
-                        <span className="text-sm text-gray-700">Download</span>
+                        <Download className="w-4 h-4 text-dark-text-secondary" />
+                        <span className="text-sm text-dark-text-primary">
+                          Download
+                        </span>
                       </button>
                     </>
                   )}
                   <button
                     onClick={handleStar}
-                    className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition-colors text-left"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-dark-hover transition-colors text-left"
                   >
                     <Star
                       className={`w-4 h-4 ${
                         isStarred
-                          ? "fill-yellow-400 text-yellow-400"
-                          : "text-gray-600"
+                          ? "fill-accent-warning text-accent-warning"
+                          : "text-dark-text-secondary"
                       }`}
                     />
-                    <span className="text-sm text-gray-700">
+                    <span className="text-sm text-dark-text-primary">
                       {isStarred ? "Unstar" : "Star"}
                     </span>
                   </button>
@@ -244,18 +250,22 @@ const FileRow = ({ file, onUpdate }) => {
                       dispatch(openShareModal(file));
                       setShowMenu(false);
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition-colors text-left"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-dark-hover transition-colors text-left"
                   >
-                    <Share2 className="w-4 h-4 text-gray-600" />
-                    <span className="text-sm text-gray-700">Share</span>
+                    <Share2 className="w-4 h-4 text-dark-text-secondary" />
+                    <span className="text-sm text-dark-text-primary">
+                      Share
+                    </span>
                   </button>
-                  <div className="border-t border-gray-200 my-1"></div>
+                  <div className="border-t border-dark-border"></div>
                   <button
                     onClick={handleTrash}
-                    className="w-full flex items-center gap-3 px-4 py-2 hover:bg-red-50 transition-colors text-left"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-accent-error/10 transition-colors text-left"
                   >
-                    <Trash2 className="w-4 h-4 text-red-600" />
-                    <span className="text-sm text-red-600">Move to Trash</span>
+                    <Trash2 className="w-4 h-4 text-accent-error" />
+                    <span className="text-sm text-accent-error">
+                      Move to Trash
+                    </span>
                   </button>
                 </>
               )}
@@ -269,33 +279,35 @@ const FileRow = ({ file, onUpdate }) => {
 
 const FileList = ({ files, onUpdate }) => {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-      <table className="w-full">
-        <thead className="bg-gray-50 border-b border-gray-200">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Name
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Type
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Size
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Modified
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-200">
-          {files.map((file) => (
-            <FileRow key={file._id} file={file} onUpdate={onUpdate} />
-          ))}
-        </tbody>
-      </table>
+    <div className="card-dark overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-dark-hover border-b border-dark-border">
+            <tr>
+              <th className="px-4 lg:px-6 py-3 text-left text-xs font-semibold text-dark-text-secondary uppercase tracking-wider">
+                Name
+              </th>
+              <th className="hidden md:table-cell px-4 lg:px-6 py-3 text-left text-xs font-semibold text-dark-text-secondary uppercase tracking-wider">
+                Type
+              </th>
+              <th className="hidden sm:table-cell px-4 lg:px-6 py-3 text-left text-xs font-semibold text-dark-text-secondary uppercase tracking-wider">
+                Size
+              </th>
+              <th className="hidden lg:table-cell px-4 lg:px-6 py-3 text-left text-xs font-semibold text-dark-text-secondary uppercase tracking-wider">
+                Modified
+              </th>
+              <th className="px-4 lg:px-6 py-3 text-left text-xs font-semibold text-dark-text-secondary uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-dark-border">
+            {files.map((file) => (
+              <FileRow key={file._id} file={file} onUpdate={onUpdate} />
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

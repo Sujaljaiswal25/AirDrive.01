@@ -74,16 +74,18 @@ const Breadcrumb = () => {
   };
 
   return (
-    <div className="flex items-center gap-2 text-sm bg-white px-6 py-3 border-b border-gray-200">
+    <div className="flex items-center gap-2 text-sm bg-dark-card px-4 lg:px-6 py-3 border-b border-dark-border overflow-x-auto">
       {breadcrumbPath.map((item, index) => (
-        <div key={item.id} className="flex items-center gap-2">
-          {index > 0 && <ChevronRight className="w-4 h-4 text-gray-400" />}
+        <div key={item.id} className="flex items-center gap-2 flex-shrink-0">
+          {index > 0 && (
+            <ChevronRight className="w-4 h-4 text-dark-text-muted" />
+          )}
           <button
             onClick={() => handleNavigate(item.id)}
-            className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
               index === breadcrumbPath.length - 1
-                ? "text-blue-600 font-medium"
-                : "text-gray-600 hover:bg-gray-100"
+                ? "text-accent-primary font-semibold bg-accent-primary/10"
+                : "text-dark-text-secondary hover:bg-dark-hover hover:text-dark-text-primary"
             }`}
           >
             {getIcon(item.id, index)}

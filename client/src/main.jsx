@@ -19,21 +19,48 @@ createRoot(document.getElementById("root")).render(
             toastOptions={{
               duration: 3000,
               style: {
-                background: "#363636",
-                color: "#fff",
+                background: "#0D0D0D",
+                color: "#EEEEEE",
+                border: "1px solid #253900",
+                borderRadius: "12px",
+                padding: "16px",
+                fontSize: "14px",
+                fontWeight: "500",
+                backdropFilter: "blur(10px)",
+                boxShadow: "0 8px 32px rgba(8, 203, 0, 0.1)",
               },
               success: {
                 duration: 3000,
+                style: {
+                  background: "#0D0D0D",
+                  border: "1px solid #08CB00",
+                  boxShadow: "0 8px 32px rgba(8, 203, 0, 0.2)",
+                },
                 iconTheme: {
-                  primary: "#10b981",
-                  secondary: "#fff",
+                  primary: "#08CB00",
+                  secondary: "#000000",
                 },
               },
               error: {
                 duration: 4000,
+                style: {
+                  background: "#0D0D0D",
+                  border: "1px solid #ef4444",
+                  boxShadow: "0 8px 32px rgba(239, 68, 68, 0.2)",
+                },
                 iconTheme: {
                   primary: "#ef4444",
-                  secondary: "#fff",
+                  secondary: "#000000",
+                },
+              },
+              loading: {
+                style: {
+                  background: "#0D0D0D",
+                  border: "1px solid #253900",
+                },
+                iconTheme: {
+                  primary: "#08CB00",
+                  secondary: "#000000",
                 },
               },
             }}

@@ -1,3 +1,96 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-dark-border;
+  }
+  
+  body {
+    @apply bg-dark-bg text-dark-text-primary antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-dark-bg;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-dark-border rounded-full hover:bg-dark-hover;
+  }
+  
+  /* Card Styles */
+  .card-dark {
+    @apply bg-dark-card border border-dark-border rounded-xl shadow-dark-md;
+  }
+  
+  .card-dark-hover {
+    @apply card-dark hover:border-accent-primary/50 hover:shadow-dark-lg transition-all duration-300;
+  }
+  
+  /* Input Styles */
+  .input-dark {
+    @apply bg-dark-card border-dark-border text-dark-text-primary placeholder-dark-text-muted;
+    @apply focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/20;
+    @apply transition-all duration-200;
+  }
+  
+  /* Button Styles */
+  .btn-primary {
+    @apply bg-accent-primary;
+    @apply text-black font-semibold px-6 py-2.5 rounded-lg;
+    @apply hover:bg-accent-primary/90 hover:shadow-lg hover:shadow-accent-primary/30 hover:scale-105 active:scale-95;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100;
+    @apply transition-all duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-dark-hover border border-dark-border text-dark-text-primary;
+    @apply hover:bg-dark-card hover:border-accent-primary/50;
+    @apply transition-all duration-200;
+  }
+  
+  .btn-ghost {
+    @apply text-dark-text-secondary hover:text-dark-text-primary hover:bg-dark-hover;
+    @apply transition-all duration-200;
+  }
+  
+  /* Glassmorphism */
+  .glass-dark {
+    @apply bg-dark-card/80 backdrop-blur-xl border border-dark-border/50;
+    @apply shadow-dark-xl;
+  }
+  
+  /* Animation */
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient 3s ease infinite;
+  }
+  
+  @keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+}
+
+/* Selection */
+::selection {
+  @apply bg-accent-primary/30 text-dark-text-primary;
+}
+
+/* Focus visible outline */
+:focus-visible {
+  @apply outline-none ring-2 ring-accent-primary ring-offset-2 ring-offset-dark-bg;
+}
