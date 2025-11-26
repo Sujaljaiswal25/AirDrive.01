@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const userModel = require("../models/user.model");
+const redisService = require("../services/redis.service");
 
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
@@ -21,7 +22,6 @@ const verifyToken = (req, res, next) => {
   });
 };
 
-
 const verifyRefreshToken = (req, res, next) => {
   const refreshToken = req.cookies?.refreshToken; // Refresh token mostly cookies me hota hai
 
@@ -41,7 +41,6 @@ const verifyRefreshToken = (req, res, next) => {
   });
 };
 
-
 const checkRole = (roles) => {
   return (req, res, next) => {
     if (!req.user || !roles.includes(req.user.role)) {
@@ -53,14 +52,15 @@ const checkRole = (roles) => {
   };
 };
 
-
-
-// Protect middleware
+// Protect middleware with Redis caching
 const protect = async (req, res, next) => {
   let token;
 
   // Token mostly "Bearer <token>" format me aata hai
-  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
     token = req.headers.authorization.split(" ")[1];
   }
 
@@ -72,12 +72,27 @@ const protect = async (req, res, next) => {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // DB se fresh user data nikalna
-    const user = await userModel.findById(decoded.id).select("-password"); // password exclude
+    // Redis me check karenge pehle (faster than DB)
+    const cacheKey = `user:${decoded.id}`;
+    let user = await redisService.get(cacheKey);
+
+    if (user) {
+      // Cache hit - Redis se user mila
+      console.log(`🚀 User loaded from cache: ${decoded.id}`);
+      req.user = user;
+      return next();
+    }
+
+    // Cache miss - DB se fetch karenge
+    console.log(`💾 User not in cache, fetching from DB: ${decoded.id}`);
+    user = await userModel.findById(decoded.id).select("-password"); // password exclude
 
     if (!user) {
       return res.status(401).json({ message: "User not found" });
     }
+
+    // User ko Redis me cache karenge (15 minutes)
+    await redisService.set(cacheKey, user.toObject(), 900);
 
     req.user = user; // req.user me complete user save
     next();
@@ -86,12 +101,9 @@ const protect = async (req, res, next) => {
   }
 };
 
-
-
-
 module.exports = {
-    checkRole,
-    verifyRefreshToken,
-    verifyToken,
-    protect
-}
+  checkRole,
+  verifyRefreshToken,
+  verifyToken,
+  protect,
+};

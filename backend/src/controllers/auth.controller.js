@@ -1,6 +1,7 @@
 const userModel = require("../models/user.model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const redisService = require("../services/redis.service");
 const {
   generateTokenPair,
   setRefreshTokenCookie,
@@ -98,6 +99,12 @@ const login = async (req, res) => {
 // ================== LOGOUT ==================
 const logout = async (req, res) => {
   try {
+    // Clear user cache on logout
+    if (req.user?._id) {
+      await redisService.delete(`user:${req.user._id}`);
+      console.log(`🗑️ User cache cleared on logout: ${req.user._id}`);
+    }
+
     clearRefreshTokenCookie(res);
     return success(res, {}, "Logged out successfully");
   } catch (err) {

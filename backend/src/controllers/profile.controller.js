@@ -1,4 +1,5 @@
 const userModel = require("../models/user.model");
+const redisService = require("../services/redis.service");
 const { uploadFileToImageKit } = require("../services/storage.service");
 const { success, error } = require("../utils/response.util");
 
@@ -46,6 +47,10 @@ const updateProfile = async (req, res) => {
     if (!user) {
       return error(res, "User not found", 404);
     }
+
+    // Clear user cache after profile update
+    await redisService.delete(`user:${req.user._id}`);
+    console.log(`🗑️ User cache cleared after profile update: ${req.user._id}`);
 
     return success(res, { user }, "Profile updated successfully");
   } catch (err) {

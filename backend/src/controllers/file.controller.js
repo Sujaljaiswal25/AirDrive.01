@@ -1,4 +1,5 @@
 const fileModel = require("../models/file.model");
+const redisService = require("../services/redis.service");
 const {
   uploadFileToImageKit,
   deleteFileFromImageKit,
@@ -108,6 +109,10 @@ const uploadFile = async (req, res) => {
       folder: folderValue,
     });
 
+    // Invalidate user's file list cache after upload
+    await redisService.deletePattern(`files:${req.user._id}:*`);
+    console.log(`🗑️ Cache invalidated for user: ${req.user._id}`);
+
     return created(res, { file }, "File uploaded successfully");
   } catch (err) {
     console.error("Upload error:", err);
@@ -127,6 +132,20 @@ const getUserFiles = async (req, res) => {
       search,
     } = req.query;
 
+    // Create cache key based on query parameters
+    const cacheKey = `files:${
+      req.user._id
+    }:page${page}:limit${limit}:sort${sortBy}:${order}:folder${
+      folder || "all"
+    }:search${search || "none"}`;
+
+    // Check Redis cache first
+    const cachedFiles = await redisService.get(cacheKey);
+    if (cachedFiles) {
+      console.log(`🚀 Files loaded from cache for user: ${req.user._id}`);
+      return success(res, cachedFiles);
+    }
+
     // Build filter
     const filter = buildFileFilter(req.user._id, {
       folder,
@@ -144,13 +163,19 @@ const getUserFiles = async (req, res) => {
 
     const totalFiles = await fileModel.countDocuments(filter);
 
-    return success(res, {
+    const responseData = {
       files,
       count: files.length,
       totalFiles,
       currentPage: Number(page),
       totalPages: Math.ceil(totalFiles / limit),
-    });
+    };
+
+    // Cache the response for 5 minutes (300 seconds)
+    await redisService.set(cacheKey, responseData, 300);
+    console.log(`💾 Files cached for user: ${req.user._id}`);
+
+    return success(res, responseData);
   } catch (err) {
     console.error("Fetch error:", err);
     return error(res, "Failed to fetch files");
@@ -180,6 +205,12 @@ const deleteFile = async (req, res) => {
 
     // Delete the file/folder itself
     await fileModel.findByIdAndDelete(file._id);
+
+    // Invalidate user's file list cache after deletion
+    await redisService.deletePattern(`files:${req.user._id}:*`);
+    console.log(
+      `🗑️ Cache invalidated after deletion for user: ${req.user._id}`
+    );
 
     const message =
       file.type === FILE_TYPE.FOLDER
@@ -267,6 +298,10 @@ const createFolder = async (req, res) => {
       owner: req.user._id,
       folder: "root",
     });
+
+    // Invalidate user's file list cache after creating folder
+    await redisService.deletePattern(`files:${req.user._id}:*`);
+    console.log(`🗑️ Cache invalidated after folder creation: ${folder.name}`);
 
     return created(res, { folder }, "Folder created successfully");
   } catch (err) {
@@ -360,6 +395,10 @@ const toggleStar = async (req, res) => {
     file.isStarred = !file.isStarred;
     await file.save();
 
+    // Invalidate user's file list cache after starring/unstarring
+    await redisService.deletePattern(`files:${req.user._id}:*`);
+    console.log(`🗑️ Cache invalidated after star toggle: ${file.name}`);
+
     const message = file.isStarred ? "File starred" : "File unstarred";
     return success(res, { isStarred: file.isStarred }, message);
   } catch (err) {
@@ -386,7 +425,10 @@ const moveToTrash = async (req, res) => {
     file.trashedAt = new Date();
     await file.save();
 
-    console.log(`File ${file.name} moved to trash`);
+    // Invalidate user's file list cache after moving to trash
+    await redisService.deletePattern(`files:${req.user._id}:*`);
+    console.log(`🗑️ Cache invalidated after moving to trash: ${file.name}`);
+
     return success(res, {}, "File moved to trash");
   } catch (err) {
     console.error("Move to trash error:", err);
@@ -415,6 +457,10 @@ const restoreFromTrash = async (req, res) => {
     file.isTrashed = false;
     file.trashedAt = null;
     await file.save();
+
+    // Invalidate user's file list cache after restoring from trash
+    await redisService.deletePattern(`files:${req.user._id}:*`);
+    console.log(`🗑️ Cache invalidated after restoring: ${file.name}`);
 
     return success(res, { file }, "File restored from trash");
   } catch (err) {
@@ -449,6 +495,10 @@ const permanentDelete = async (req, res) => {
     // Delete from database
     await fileModel.findByIdAndDelete(file._id);
     console.log(`Successfully deleted: ${file.name}`);
+
+    // Invalidate user's file list cache after permanent deletion
+    await redisService.deletePattern(`files:${req.user._id}:*`);
+    console.log(`🗑️ Cache invalidated after permanent deletion: ${file.name}`);
 
     return success(res, {}, "File permanently deleted");
   } catch (err) {
