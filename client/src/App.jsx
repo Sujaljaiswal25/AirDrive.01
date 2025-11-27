@@ -15,13 +15,13 @@ const App = () => {
       <Route
         path="/login"
         element={
-          isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />
+          !isAuthenticated ? <Login /> : <Navigate to="/dashboard" replace />
         }
       />
       <Route
         path="/register"
         element={
-          isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />
+          !isAuthenticated ? <Register /> : <Navigate to="/dashboard" replace />
         }
       />
 
@@ -43,15 +43,13 @@ const App = () => {
         }
       />
 
-      {/* Default Route */}
+      {/* Root and 404 Routes */}
       <Route
         path="/"
         element={
           <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
         }
       />
-
-      {/* 404 Route */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

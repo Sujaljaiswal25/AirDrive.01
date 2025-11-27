@@ -1,17 +1,19 @@
 import axios from "axios";
+import { store } from "../store/store";
+import { logout } from "../store/slices/authSlice";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true, // Important for cookies (refresh token)
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Request interceptor - Add access token to requests
+// Request interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
     const accessToken = localStorage.getItem("accessToken");
@@ -20,23 +22,44 @@ axiosInstance.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor - Handle token refresh
+// Response interceptor
+let isRefreshing = false;
+let refreshSubscribers = [];
+
+const subscribeTokenRefresh = (cb) => {
+  refreshSubscribers.push(cb);
+};
+
+const onRefreshed = (token) => {
+  refreshSubscribers.forEach((cb) => cb(token));
+  refreshSubscribers = [];
+};
+
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // If error is 401 and we haven't tried to refresh yet
+    // Handle 401 errors
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
+      // If already refreshing, wait for the new token
+      if (isRefreshing) {
+        return new Promise((resolve) => {
+          subscribeTokenRefresh((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            resolve(axiosInstance(originalRequest));
+          });
+        });
+      }
+
+      isRefreshing = true;
+
       try {
-        // Try to refresh the token
         const response = await axios.post(
           `${API_BASE_URL}/api/auth/refresh-token`,
           {},
@@ -44,18 +67,26 @@ axiosInstance.interceptors.response.use(
         );
 
         const { accessToken } = response.data;
-
-        // Save new access token
         localStorage.setItem("accessToken", accessToken);
 
-        // Retry original request with new token
+        isRefreshing = false;
+        onRefreshed(accessToken);
+
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return axiosInstance(originalRequest);
-      } catch (refreshError) {
-        // Refresh failed - logout user
+      } catch (err) {
+        isRefreshing = false;
+        refreshSubscribers = [];
+
+        // Clear auth and redirect
         localStorage.removeItem("accessToken");
-        window.location.href = "/login";
-        return Promise.reject(refreshError);
+        store.dispatch(logout());
+
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
+
+        return Promise.reject(err);
       }
     }
 

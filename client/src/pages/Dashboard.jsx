@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
@@ -18,7 +18,6 @@ import {
   setLoading,
   setError,
   setPagination,
-  resetFiles,
 } from "../store/slices/fileSlice";
 
 const Dashboard = () => {
@@ -33,72 +32,9 @@ const Dashboard = () => {
     pagination,
     loading,
   } = useSelector((state) => state.files);
-  const { sidebarOpen } = useSelector((state) => state.ui);
-
-  // Clear files and fetch fresh data on mount
-  useEffect(() => {
-    dispatch(resetFiles());
-    fetchFiles();
-  }, [currentFolder, pagination.currentPage, sortBy, sortOrder]);
-
-  // Search with debounce
-  useEffect(() => {
-    if (searchQuery) {
-      const timeoutId = setTimeout(() => {
-        handleSearch();
-      }, 500);
-      return () => clearTimeout(timeoutId);
-    } else {
-      fetchFiles();
-    }
-  }, [searchQuery]);
-
-  const fetchFiles = async () => {
-    try {
-      dispatch(setLoading(true));
-      dispatch(resetFiles()); // Clear old data before fetching
-
-      // Check if currentFolder is a category filter
-      const categories = ["images", "videos", "audio", "documents"];
-      const isCategory = categories.includes(currentFolder);
-
-      // For starred and trash, let backend handle it via folder parameter
-      // For categories, fetch from root and filter client-side
-      const response = await fileAPI.getUserFiles({
-        page: pagination.currentPage,
-        limit: pagination.limit,
-        sortBy,
-        order: sortOrder,
-        folder: isCategory ? "root" : currentFolder, // Pass starred/trash/folders to backend
-      });
-
-      // Filter by category if needed (client-side filtering)
-      let filteredFiles = response.files;
-      if (isCategory) {
-        filteredFiles = filterByCategory(response.files, currentFolder);
-      } else if (currentFolder === "folders") {
-        filteredFiles = response.files.filter((file) => file.type === "folder");
-      }
-
-      dispatch(setFiles(filteredFiles));
-      dispatch(
-        setPagination({
-          currentPage: response.currentPage,
-          totalPages: response.totalPages,
-          totalFiles: isCategory ? filteredFiles.length : response.totalFiles,
-        })
-      );
-    } catch (error) {
-      dispatch(
-        setError(error.response?.data?.message || "Failed to fetch files")
-      );
-      toast.error("Failed to load files");
-    }
-  };
 
   // Filter files by category
-  const filterByCategory = (filesList, category) => {
-    // Exclude folders and trashed items from category views
+  const filterByCategory = useCallback((filesList, category) => {
     const validFiles = filesList.filter(
       (file) => file.type !== "folder" && !file.isTrashed
     );
@@ -124,9 +60,55 @@ const Dashboard = () => {
       default:
         return validFiles;
     }
-  };
+  }, []);
 
-  const handleSearch = async () => {
+  const fetchFiles = useCallback(async () => {
+    try {
+      dispatch(setLoading(true));
+
+      const categories = ["images", "videos", "audio", "documents"];
+      const isCategory = categories.includes(currentFolder);
+
+      const response = await fileAPI.getUserFiles({
+        page: pagination.currentPage,
+        limit: pagination.limit,
+        sortBy,
+        order: sortOrder,
+        folder: isCategory ? "root" : currentFolder,
+      });
+
+      let filteredFiles = response.files;
+      if (isCategory) {
+        filteredFiles = filterByCategory(response.files, currentFolder);
+      } else if (currentFolder === "folders") {
+        filteredFiles = response.files.filter((file) => file.type === "folder");
+      }
+
+      dispatch(setFiles(filteredFiles));
+      dispatch(
+        setPagination({
+          currentPage: response.currentPage,
+          totalPages: response.totalPages,
+          totalFiles: isCategory ? filteredFiles.length : response.totalFiles,
+        })
+      );
+    } catch (error) {
+      dispatch(
+        setError(error.response?.data?.message || "Failed to fetch files")
+      );
+      toast.error("Failed to load files");
+    }
+  }, [
+    currentFolder,
+    pagination.currentPage,
+    pagination.limit,
+    sortBy,
+    sortOrder,
+    dispatch,
+    filterByCategory,
+  ]);
+
+  const handleSearch = useCallback(async () => {
     try {
       dispatch(setLoading(true));
       const response = await fileAPI.searchFiles(
@@ -144,7 +126,22 @@ const Dashboard = () => {
     } catch (error) {
       toast.error("Search failed");
     }
-  };
+  }, [searchQuery, currentFolder, dispatch]);
+
+  // Fetch files when dependencies change
+  useEffect(() => {
+    fetchFiles();
+  }, [fetchFiles]);
+
+  // Search with debounce
+  useEffect(() => {
+    if (searchQuery) {
+      const timeoutId = setTimeout(() => {
+        handleSearch();
+      }, 500);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [searchQuery, handleSearch]);
 
   return (
     <div className="flex h-screen bg-dark-bg overflow-hidden">
