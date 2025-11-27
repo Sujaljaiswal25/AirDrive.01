@@ -21,6 +21,24 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
+// Health Check Route
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "AirDrive API is running",
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || "development",
+  });
+});
+
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "API is healthy",
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // Routes
 app.use("/api/auth", authRoute);
 app.use("/api/files", fileRoutes);
