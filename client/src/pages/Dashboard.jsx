@@ -20,7 +20,6 @@ import {
   setPagination,
   resetFiles,
 } from "../store/slices/fileSlice";
-import { setSidebarOpen } from "../store/slices/uiSlice";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -41,17 +40,6 @@ const Dashboard = () => {
     dispatch(resetFiles());
     fetchFiles();
   }, [currentFolder, pagination.currentPage, sortBy, sortOrder]);
-
-  // Ensure sidebar default state matches screen size
-  useEffect(() => {
-    const updateSidebarForViewport = () => {
-      const isDesktop = window.innerWidth >= 1024; // lg breakpoint
-      dispatch(setSidebarOpen(isDesktop));
-    };
-    updateSidebarForViewport();
-    window.addEventListener("resize", updateSidebarForViewport);
-    return () => window.removeEventListener("resize", updateSidebarForViewport);
-  }, [dispatch]);
 
   // Search with debounce
   useEffect(() => {
@@ -165,12 +153,10 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="w-full max-w-screen-2xl mx-auto">
-          <Header onRefresh={fetchFiles} />
-          <Breadcrumb />
-        </div>
+        <Header onRefresh={fetchFiles} />
+        <Breadcrumb />
 
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6 w-full max-w-screen-2xl mx-auto">
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
           {loading ? (
             <div className="flex items-center justify-center h-64">
               <div className="relative">

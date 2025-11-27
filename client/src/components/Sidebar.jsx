@@ -99,7 +99,7 @@ const Sidebar = () => {
   const sidebarContent = (
     <>
       {/* Logo & Close Button */}
-      <div className="p-5 sm:p-6 border-b border-dark-border flex items-center justify-between">
+      <div className="p-6 border-b border-dark-border flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="relative w-10 h-10 bg-gradient-to-br from-accent-primary/20 to-accent-primary/10 rounded-2xl flex items-center justify-center border border-accent-primary/30">
             <Cloud className="w-5 h-5 text-accent-primary" />
@@ -134,7 +134,7 @@ const Sidebar = () => {
                   "&background=3b82f6&color=fff"
               }
               alt={user?.name}
-              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-accent-primary/20"
+              className="w-12 h-12 rounded-full object-cover ring-2 ring-accent-primary/20"
             />
             <div className="absolute bottom-0 right-0 w-3 h-3 bg-accent-success rounded-full border-2 border-dark-card"></div>
           </div>
@@ -235,7 +235,7 @@ const Sidebar = () => {
       <motion.div
         initial={{ x: -300 }}
         animate={{ x: 0 }}
-        className="hidden lg:flex w-64 bg-dark-card border-r border-dark-border flex-col shadow-dark-lg"
+        className="hidden lg:flex w-72 bg-dark-card border-r border-dark-border flex-col shadow-dark-lg"
       >
         {sidebarContent}
       </motion.div>
@@ -259,7 +259,7 @@ const Sidebar = () => {
               animate={{ x: 0 }}
               exit={{ x: -300 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="lg:hidden fixed left-0 top-0 bottom-0 w-72 max-w-[80vw] bg-dark-card border-r border-dark-border flex flex-col shadow-dark-xl z-50"
+              className="lg:hidden fixed left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-dark-card border-r border-dark-border flex flex-col shadow-dark-xl z-50"
             >
               {sidebarContent}
             </motion.div>

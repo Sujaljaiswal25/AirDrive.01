@@ -53,38 +53,36 @@ const FileCard = ({ file, onUpdate }) => {
   const getFileIcon = () => {
     if (file.type === "folder")
       return {
-        icon: (
-          <Folder className="w-8 h-8 sm:w-10 sm:h-10 text-accent-warning" />
-        ),
+        icon: <Folder className="w-10 h-10 text-accent-warning" />,
         label: "Folder",
         color: "bg-accent-warning/10",
       };
     if (file.type?.startsWith("image/"))
       return {
-        icon: <Image className="w-8 h-8 sm:w-10 sm:h-10 text-accent-success" />,
+        icon: <Image className="w-10 h-10 text-accent-success" />,
         label: "Image",
         color: "bg-accent-success/10",
       };
     if (file.type?.startsWith("video/"))
       return {
-        icon: <Video className="w-8 h-8 sm:w-10 sm:h-10 text-purple-500" />,
+        icon: <Video className="w-10 h-10 text-purple-500" />,
         label: "Video",
         color: "bg-purple-500/10",
       };
     if (file.type?.startsWith("audio/"))
       return {
-        icon: <Music className="w-8 h-8 sm:w-10 sm:h-10 text-pink-500" />,
+        icon: <Music className="w-10 h-10 text-pink-500" />,
         label: "Audio",
         color: "bg-pink-500/10",
       };
     if (file.type?.includes("pdf") || file.type?.includes("document"))
       return {
-        icon: <FileText className="w-8 h-8 sm:w-10 sm:h-10 text-blue-500" />,
+        icon: <FileText className="w-10 h-10 text-blue-500" />,
         label: "Document",
         color: "bg-blue-500/10",
       };
     return {
-      icon: <File className="w-8 h-8 sm:w-10 sm:h-10 text-gray-500" />,
+      icon: <File className="w-10 h-10 text-gray-500" />,
       label: "File",
       color: "bg-gray-500/10",
     };
@@ -154,7 +152,7 @@ const FileCard = ({ file, onUpdate }) => {
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.2 }}
-      className="group relative bg-dark-card hover:bg-dark-hover border border-dark-border hover:border-accent-primary/30 rounded-xl p-2 sm:p-3 cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-accent-primary/5"
+      className="group relative bg-dark-card hover:bg-dark-hover border border-dark-border hover:border-accent-primary/30 rounded-xl p-3 cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-accent-primary/5"
       onClick={handleCardClick}
     >
       {/* Star Badge */}
@@ -166,7 +164,7 @@ const FileCard = ({ file, onUpdate }) => {
 
       {/* Thumbnail or Icon */}
       <div
-        className={`aspect-[4/3] sm:aspect-square rounded-lg ${fileIcon.color} flex items-center justify-center mb-2 sm:mb-3 overflow-hidden border border-dark-border/50`}
+        className={`aspect-square rounded-lg ${fileIcon.color} flex items-center justify-center mb-3 overflow-hidden border border-dark-border/50`}
       >
         {file.type?.startsWith("image/") ? (
           <img
@@ -187,7 +185,7 @@ const FileCard = ({ file, onUpdate }) => {
       {/* File Info */}
       <div className="space-y-1">
         <h3
-          className="text-xs sm:text-sm font-medium text-dark-text-primary truncate leading-snug"
+          className="text-sm font-medium text-dark-text-primary truncate leading-snug"
           title={file.name}
         >
           {file.name}
@@ -203,7 +201,7 @@ const FileCard = ({ file, onUpdate }) => {
       </div>
 
       {/* Quick Actions - Always visible on mobile, hover on desktop */}
-      <div className="flex items-center gap-1 mt-2 sm:mt-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+      <div className="flex items-center gap-1 mt-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
         {file.type !== "folder" && (
           <>
             <button
@@ -211,7 +209,7 @@ const FileCard = ({ file, onUpdate }) => {
                 e.stopPropagation();
                 dispatch(openPreviewModal(file));
               }}
-              className="flex-1 flex items-center justify-center gap-1.5 px-1.5 py-1 sm:px-2 sm:py-1.5 bg-dark-hover hover:bg-accent-primary/10 hover:text-accent-primary rounded-lg transition-colors text-xs font-medium"
+              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-dark-hover hover:bg-accent-primary/10 hover:text-accent-primary rounded-lg transition-colors text-xs font-medium"
               title="Preview"
             >
               <Eye className="w-3.5 h-3.5" />
@@ -222,7 +220,7 @@ const FileCard = ({ file, onUpdate }) => {
                 e.stopPropagation();
                 handleDownload();
               }}
-              className="flex-1 flex items-center justify-center gap-1.5 px-1.5 py-1 sm:px-2 sm:py-1.5 bg-dark-hover hover:bg-accent-success/10 hover:text-accent-success rounded-lg transition-colors text-xs font-medium"
+              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-dark-hover hover:bg-accent-success/10 hover:text-accent-success rounded-lg transition-colors text-xs font-medium"
               title="Download"
             >
               <Download className="w-3.5 h-3.5" />
@@ -235,7 +233,7 @@ const FileCard = ({ file, onUpdate }) => {
             e.stopPropagation();
             dispatch(openShareModal(file));
           }}
-          className="flex-1 flex items-center justify-center gap-1.5 px-1.5 py-1 sm:px-2 sm:py-1.5 bg-dark-hover hover:bg-accent-primary/10 hover:text-accent-primary rounded-lg transition-colors text-xs font-medium"
+          className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-dark-hover hover:bg-accent-primary/10 hover:text-accent-primary rounded-lg transition-colors text-xs font-medium"
           title="Share"
         >
           <Share2 className="w-3.5 h-3.5" />
@@ -360,7 +358,7 @@ const FileCard = ({ file, onUpdate }) => {
 
 const FileGrid = ({ files, onUpdate }) => {
   return (
-    <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2 sm:gap-4 lg:gap-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3">
       {files.map((file) => (
         <FileCard key={file._id} file={file} onUpdate={onUpdate} />
       ))}

@@ -64,7 +64,7 @@ const Header = ({ onRefresh }) => {
   ];
 
   return (
-    <header className="bg-dark-card border-b border-dark-border px-4 lg:px-6 py-3 shadow-dark-sm">
+    <header className="bg-dark-card border-b border-dark-border px-4 lg:px-6 py-4 shadow-dark-sm">
       <div className="flex items-center justify-between gap-3">
         {/* Left Section */}
         <div className="flex items-center gap-3 flex-1">
@@ -76,14 +76,14 @@ const Header = ({ onRefresh }) => {
           </button>
 
           {/* Search Bar - Desktop */}
-          <div className="hidden md:block relative flex-1 max-w-lg">
+          <div className="hidden md:block relative flex-1 max-w-xl">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-dark-text-muted w-5 h-5" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => dispatch(setSearchQuery(e.target.value))}
               placeholder="Search files..."
-              className="w-full pl-10 pr-4 py-2 input-dark rounded-lg outline-none"
+              className="w-full pl-10 pr-4 py-2.5 input-dark rounded-lg outline-none"
             />
           </div>
 
@@ -301,7 +301,7 @@ const Header = ({ onRefresh }) => {
               value={searchQuery}
               onChange={(e) => dispatch(setSearchQuery(e.target.value))}
               placeholder="Search files..."
-              className="w-full pl-10 pr-4 py-2 input-dark rounded-lg outline-none"
+              className="w-full pl-10 pr-4 py-2.5 input-dark rounded-lg outline-none"
               autoFocus
             />
           </div>
