@@ -134,7 +134,7 @@ const FileRow = ({ file, onUpdate }) => {
       onClick={handleRowClick}
     >
       {/* Name */}
-      <td className="px-4 lg:px-6 py-4">
+      <td className="px-4 lg:px-6 py-3 md:py-4">
         <div className="flex items-center gap-3">
           {getFileIcon()}
           <span
@@ -147,17 +147,17 @@ const FileRow = ({ file, onUpdate }) => {
       </td>
 
       {/* Type */}
-      <td className="hidden md:table-cell px-4 lg:px-6 py-4 text-sm text-dark-text-secondary">
+      <td className="hidden md:table-cell px-4 lg:px-6 py-3 md:py-4 text-sm text-dark-text-secondary">
         {file.type === "folder" ? "Folder" : file.type?.split("/")[0] || "File"}
       </td>
 
       {/* Size */}
-      <td className="hidden sm:table-cell px-4 lg:px-6 py-4 text-sm text-dark-text-secondary">
+      <td className="hidden sm:table-cell px-4 lg:px-6 py-3 md:py-4 text-sm text-dark-text-secondary">
         {file.type === "folder" ? "-" : formatFileSize(file.size)}
       </td>
 
       {/* Modified */}
-      <td className="hidden lg:table-cell px-4 lg:px-6 py-4 text-sm text-dark-text-secondary">
+      <td className="hidden lg:table-cell px-4 lg:px-6 py-3 md:py-4 text-sm text-dark-text-secondary">
         {formatDate(file.createdAt)}
       </td>
 
