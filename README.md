@@ -1,6 +1,7 @@
 # AirDrive - Complete Project Overview
 
 ## 📋 Table of Contents
+
 - [Project Introduction](#project-introduction)
 - [System Architecture](#system-architecture)
 - [Technology Stack](#technology-stack)
@@ -24,6 +25,7 @@
 **AirDrive** is a full-stack cloud storage application inspired by Google Drive, built with modern web technologies. It provides a seamless file management experience with features like file upload/download, folder organization, file sharing, starred files, and a trash system.
 
 ### Project Goals
+
 - Provide secure cloud storage for users
 - Enable easy file organization with folders
 - Support file sharing with public links
@@ -33,6 +35,7 @@
 - Scale with cloud storage (ImageKit CDN)
 
 ### Target Audience
+
 - Individual users needing personal cloud storage
 - Small teams requiring file collaboration
 - Developers learning full-stack development
@@ -100,39 +103,39 @@
 
 ### Frontend Technologies
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| React | 19.0.0 | UI Framework |
-| Vite | 6.2.0 | Build Tool & Dev Server |
-| Redux Toolkit | 2.10.1 | State Management |
-| Redux Persist | 6.0.0 | State Persistence |
-| React Router DOM | 7.9.6 | Client-side Routing |
-| Tailwind CSS | 3.4.18 | Utility-first CSS |
-| Framer Motion | 12.23.24 | Animation Library |
-| Axios | 1.13.2 | HTTP Client |
-| React Hook Form | 7.66.1 | Form Handling |
-| React Hot Toast | 2.6.0 | Notifications |
-| Lucide React | 0.554.0 | Icon Library |
-| TanStack Query | 5.90.10 | Data Fetching |
-| date-fns | 4.1.0 | Date Formatting |
+| Technology       | Version  | Purpose                 |
+| ---------------- | -------- | ----------------------- |
+| React            | 19.0.0   | UI Framework            |
+| Vite             | 6.2.0    | Build Tool & Dev Server |
+| Redux Toolkit    | 2.10.1   | State Management        |
+| Redux Persist    | 6.0.0    | State Persistence       |
+| React Router DOM | 7.9.6    | Client-side Routing     |
+| Tailwind CSS     | 3.4.18   | Utility-first CSS       |
+| Framer Motion    | 12.23.24 | Animation Library       |
+| Axios            | 1.13.2   | HTTP Client             |
+| React Hook Form  | 7.66.1   | Form Handling           |
+| React Hot Toast  | 2.6.0    | Notifications           |
+| Lucide React     | 0.554.0  | Icon Library            |
+| TanStack Query   | 5.90.10  | Data Fetching           |
+| date-fns         | 4.1.0    | Date Formatting         |
 
 ### Backend Technologies
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Node.js | - | Runtime Environment |
-| Express.js | 5.1.0 | Web Framework |
-| MongoDB | - | NoSQL Database |
-| Mongoose | 8.18.0 | MongoDB ODM |
-| Redis | 5.10.0 | Caching Layer |
-| ioredis | 5.8.2 | Redis Client |
-| JWT | 9.0.2 | Authentication |
-| bcryptjs | 3.0.2 | Password Hashing |
-| Multer | 2.0.2 | File Upload |
-| ImageKit | 6.0.0 | Cloud Storage & CDN |
-| dotenv | 17.2.1 | Environment Config |
-| cookie-parser | 1.4.7 | Cookie Handling |
-| CORS | 2.8.5 | Cross-Origin Support |
+| Technology    | Version | Purpose              |
+| ------------- | ------- | -------------------- |
+| Node.js       | -       | Runtime Environment  |
+| Express.js    | 5.1.0   | Web Framework        |
+| MongoDB       | -       | NoSQL Database       |
+| Mongoose      | 8.18.0  | MongoDB ODM          |
+| Redis         | 5.10.0  | Caching Layer        |
+| ioredis       | 5.8.2   | Redis Client         |
+| JWT           | 9.0.2   | Authentication       |
+| bcryptjs      | 3.0.2   | Password Hashing     |
+| Multer        | 2.0.2   | File Upload          |
+| ImageKit      | 6.0.0   | Cloud Storage & CDN  |
+| dotenv        | 17.2.1  | Environment Config   |
+| cookie-parser | 1.4.7   | Cookie Handling      |
+| CORS          | 2.8.5   | Cross-Origin Support |
 
 ---
 
@@ -247,6 +250,7 @@ AirDrive/
 ## ✨ Key Features
 
 ### 1. User Authentication & Authorization
+
 - **User Registration** with email validation
 - **Secure Login** with JWT tokens
 - **Access & Refresh Tokens** for session management
@@ -257,6 +261,7 @@ AirDrive/
 - **Profile Management** (update info, change password, avatar)
 
 ### 2. File Management
+
 - **File Upload**
   - Drag & drop interface
   - Multiple file upload
@@ -264,17 +269,14 @@ AirDrive/
   - File type validation
   - Size limits (10MB default)
   - ImageKit CDN integration
-  
 - **File Download**
   - Direct download from CDN
   - Secure download URLs
   - Browser compatibility
-  
 - **File Preview**
   - Image preview
   - PDF viewer
   - Document info display
-  
 - **File Organization**
   - Create folders
   - Folder navigation
@@ -282,6 +284,7 @@ AirDrive/
   - Move files between folders
 
 ### 3. File Operations
+
 - **Star/Unstar Files** - Mark favorites
 - **Trash System** - Soft delete with restore
 - **Permanent Delete** - Remove files permanently
@@ -291,6 +294,7 @@ AirDrive/
 - **Sort** - By name, date, size, type
 
 ### 4. User Interface
+
 - **Dark Theme** - Modern dark design
 - **Responsive Design** - Mobile, tablet, desktop
 - **Grid View** - Thumbnail view with cards
@@ -301,6 +305,7 @@ AirDrive/
 - **Error Handling** - User-friendly messages
 
 ### 5. Performance Optimization
+
 - **Redis Caching** - Cache file lists and profiles
 - **CDN Delivery** - Fast file serving via ImageKit
 - **Code Splitting** - Lazy load components
@@ -309,6 +314,7 @@ AirDrive/
 - **Pagination** - Load files in chunks
 
 ### 6. Security Features
+
 - **JWT Authentication** - Secure token-based auth
 - **CORS Protection** - Whitelist origins
 - **Input Validation** - Sanitize user input
@@ -441,6 +447,7 @@ Frontend will run on: `http://localhost:5173`
 ## 📡 API Documentation
 
 ### Base URL
+
 ```
 http://localhost:5000/api
 ```
@@ -448,6 +455,7 @@ http://localhost:5000/api
 ### Authentication Endpoints
 
 #### Register User
+
 ```http
 POST /api/auth/register
 Content-Type: application/json
@@ -476,6 +484,7 @@ Response: 201 Created
 ```
 
 #### Login
+
 ```http
 POST /api/auth/login
 Content-Type: application/json
@@ -497,6 +506,7 @@ Response: 200 OK
 ```
 
 #### Logout
+
 ```http
 POST /api/auth/logout
 Authorization: Bearer <token>
@@ -509,6 +519,7 @@ Response: 200 OK
 ```
 
 #### Refresh Token
+
 ```http
 POST /api/auth/refresh-token
 Cookie: refreshToken=<token>
@@ -525,6 +536,7 @@ Response: 200 OK
 ### File Management Endpoints
 
 #### Upload File
+
 ```http
 POST /api/files/upload
 Authorization: Bearer <token>
@@ -553,6 +565,7 @@ Response: 201 Created
 ```
 
 #### Get User Files
+
 ```http
 GET /api/files?folder=root&page=1&limit=20&sortBy=createdAt&order=desc
 Authorization: Bearer <token>
@@ -570,6 +583,7 @@ Response: 200 OK
 ```
 
 #### Create Folder
+
 ```http
 POST /api/files/folder
 Authorization: Bearer <token>
@@ -584,6 +598,7 @@ Response: 201 Created
 ```
 
 #### Toggle Star
+
 ```http
 PATCH /api/files/star/:fileId
 Authorization: Bearer <token>
@@ -599,6 +614,7 @@ Response: 200 OK
 ```
 
 #### Move to Trash
+
 ```http
 PATCH /api/files/trash/:fileId
 Authorization: Bearer <token>
@@ -607,6 +623,7 @@ Response: 200 OK
 ```
 
 #### Share File
+
 ```http
 POST /api/files/share/:fileId
 Authorization: Bearer <token>
@@ -622,6 +639,7 @@ Response: 200 OK
 ```
 
 #### Delete File
+
 ```http
 DELETE /api/files/:fileId
 Authorization: Bearer <token>
@@ -632,6 +650,7 @@ Response: 200 OK
 ### Profile Endpoints
 
 #### Get Profile
+
 ```http
 GET /api/profile
 Authorization: Bearer <token>
@@ -646,6 +665,7 @@ Response: 200 OK
 ```
 
 #### Update Profile
+
 ```http
 PUT /api/profile
 Authorization: Bearer <token>
@@ -660,6 +680,7 @@ Response: 200 OK
 ```
 
 #### Change Password
+
 ```http
 PUT /api/profile/password
 Authorization: Bearer <token>
@@ -680,6 +701,7 @@ Response: 200 OK
 ### State Management (Redux Toolkit)
 
 #### Auth Slice
+
 ```javascript
 {
   user: Object | null,
@@ -691,6 +713,7 @@ Response: 200 OK
 ```
 
 #### File Slice
+
 ```javascript
 {
   files: Array,
@@ -714,6 +737,7 @@ Response: 200 OK
 ```
 
 #### UI Slice
+
 ```javascript
 {
   sidebarOpen: Boolean,
@@ -784,16 +808,16 @@ const uploadFile = async (req, res) => {
   try {
     // 1. Validate input
     if (!req.file) return badRequest(res, "No file uploaded");
-    
+
     // 2. Process business logic
     const uploadResult = await uploadFileToImageKit(buffer, filename);
-    
+
     // 3. Save to database
     const newFile = await fileModel.create({ ... });
-    
+
     // 4. Clear cache
     await redisService.deleteCache(`user:${userId}:files`);
-    
+
     // 5. Return response
     return created(res, { file: newFile }, "File uploaded");
   } catch (err) {
@@ -805,18 +829,20 @@ const uploadFile = async (req, res) => {
 ### Service Layer
 
 **Storage Service (ImageKit)**
+
 ```javascript
-- uploadFileToImageKit(buffer, filename)
-- deleteFileFromImageKit(fileId)
-- generateFileUrl(fileId)
+-uploadFileToImageKit(buffer, filename) -
+  deleteFileFromImageKit(fileId) -
+  generateFileUrl(fileId);
 ```
 
 **Redis Service (Caching)**
+
 ```javascript
-- setCache(key, value, expiry)
-- getCache(key)
-- deleteCache(key)
-- clearUserCache(userId)
+-setCache(key, value, expiry) -
+  getCache(key) -
+  deleteCache(key) -
+  clearUserCache(userId);
 ```
 
 ---
@@ -862,7 +888,7 @@ Indexes: email (unique)
   updatedAt: Date
 }
 
-Indexes: 
+Indexes:
   - owner
   - folder
   - type
@@ -889,6 +915,7 @@ folder:{folderId}:contents   // Folder contents (5 min TTL)
 ### JWT Token Structure
 
 **Access Token** (15 minutes expiry)
+
 ```javascript
 {
   _id: "user-id",
@@ -900,6 +927,7 @@ folder:{folderId}:contents   // Folder contents (5 min TTL)
 ```
 
 **Refresh Token** (7 days expiry)
+
 ```javascript
 {
   _id: "user-id",
@@ -912,6 +940,7 @@ folder:{folderId}:contents   // Folder contents (5 min TTL)
 ### Authentication Flow
 
 1. **User Registration**
+
    - Validate input
    - Hash password (bcrypt, 10 rounds)
    - Create user in database
@@ -920,6 +949,7 @@ folder:{folderId}:contents   // Folder contents (5 min TTL)
    - Return user + access token
 
 2. **User Login**
+
    - Validate credentials
    - Compare password hash
    - Generate token pair
@@ -927,12 +957,14 @@ folder:{folderId}:contents   // Folder contents (5 min TTL)
    - Return user + access token
 
 3. **Protected Request**
+
    - Extract token from Authorization header
    - Verify token with JWT_SECRET
    - Attach user to request object
    - Proceed to route handler
 
 4. **Token Refresh**
+
    - Extract refresh token from cookie
    - Verify with JWT_REFRESH_SECRET
    - Generate new access token
@@ -964,24 +996,26 @@ folder:{folderId}:contents   // Folder contents (5 min TTL)
 ### File Storage Strategy
 
 **Small Files** (< 10MB)
+
 - Direct upload to ImageKit
 - CDN delivery
 - Automatic optimization
 
 **Large Files** (Future Enhancement)
+
 - Chunked upload
 - Resume capability
 - Progress tracking
 
 ### File Type Handling
 
-| Category | Types | Storage |
-|----------|-------|---------|
-| Images | jpg, png, gif, svg, webp | ImageKit (optimized) |
-| Documents | pdf, doc, docx, txt, xlsx | ImageKit (original) |
-| Videos | mp4, avi, mov, mkv | ImageKit (original) |
-| Audio | mp3, wav, ogg, m4a | ImageKit (original) |
-| Folders | N/A | Metadata only (MongoDB) |
+| Category  | Types                     | Storage                 |
+| --------- | ------------------------- | ----------------------- |
+| Images    | jpg, png, gif, svg, webp  | ImageKit (optimized)    |
+| Documents | pdf, doc, docx, txt, xlsx | ImageKit (original)     |
+| Videos    | mp4, avi, mov, mkv        | ImageKit (original)     |
+| Audio     | mp3, wav, ogg, m4a        | ImageKit (original)     |
+| Folders   | N/A                       | Metadata only (MongoDB) |
 
 ---
 
@@ -1102,6 +1136,7 @@ aws s3 sync dist/ s3://your-bucket-name --acl public-read
 ### Environment Configuration for Production
 
 **Backend**
+
 ```env
 NODE_ENV=production
 PORT=5000
@@ -1110,6 +1145,7 @@ CORS_ORIGIN=https://yourdomain.com
 ```
 
 **Frontend**
+
 ```env
 VITE_API_BASE_URL=https://api.yourdomain.com
 ```
@@ -1138,6 +1174,7 @@ git push origin feature/new-feature
 ### Code Standards
 
 **Backend**
+
 - Use async/await for promises
 - Implement try-catch error handling
 - Return standardized responses (success, created, error, etc.)
@@ -1146,6 +1183,7 @@ git push origin feature/new-feature
 - Use meaningful variable names
 
 **Frontend**
+
 - Use functional components with hooks
 - Implement PropTypes or TypeScript (future)
 - Keep components small and focused
@@ -1156,6 +1194,7 @@ git push origin feature/new-feature
 ### Testing Strategy
 
 **Backend Testing**
+
 ```bash
 # Unit tests for controllers
 npm test controllers
@@ -1168,6 +1207,7 @@ npm test load
 ```
 
 **Frontend Testing**
+
 ```bash
 # Component tests
 npm test
@@ -1179,12 +1219,14 @@ npm run cypress:open
 ### Performance Monitoring
 
 **Backend**
+
 - Monitor API response times
 - Track Redis cache hit/miss ratio
 - Monitor MongoDB query performance
 - Use PM2 monitoring dashboard
 
 **Frontend**
+
 - Use Lighthouse for audits
 - Monitor bundle size
 - Track Core Web Vitals
@@ -1195,6 +1237,7 @@ npm run cypress:open
 ## 📊 Project Statistics
 
 ### Backend
+
 - **API Endpoints**: 20+
 - **Controllers**: 3 (Auth, File, Profile)
 - **Models**: 2 (User, File)
@@ -1203,6 +1246,7 @@ npm run cypress:open
 - **Utilities**: 4 (Auth, File, Response, Validation)
 
 ### Frontend
+
 - **Components**: 15+
 - **Pages**: 4 (Dashboard, Login, Register, Profile)
 - **Redux Slices**: 3 (Auth, File, UI)
@@ -1210,6 +1254,7 @@ npm run cypress:open
 - **Modals**: 5 (Upload, CreateFolder, Share, Delete, Preview)
 
 ### Supported Operations
+
 - User registration & authentication
 - File upload/download (10MB limit)
 - Folder creation & navigation
@@ -1225,6 +1270,7 @@ npm run cypress:open
 ## 🔮 Future Enhancements
 
 ### Phase 1 (Short Term)
+
 - [ ] TypeScript migration
 - [ ] Unit test coverage (80%+)
 - [ ] E2E testing with Cypress
@@ -1233,6 +1279,7 @@ npm run cypress:open
 - [ ] Advanced search (by content, tags)
 
 ### Phase 2 (Medium Term)
+
 - [ ] Real-time collaboration
 - [ ] File comments & annotations
 - [ ] Advanced sharing permissions
@@ -1241,6 +1288,7 @@ npm run cypress:open
 - [ ] Mobile app (React Native)
 
 ### Phase 3 (Long Term)
+
 - [ ] AI-powered file organization
 - [ ] OCR for document search
 - [ ] Video transcoding
@@ -1253,6 +1301,7 @@ npm run cypress:open
 ## 🐛 Known Issues & Limitations
 
 ### Current Limitations
+
 1. **File Size**: Limited to 10MB per file (configurable)
 2. **Concurrent Uploads**: No limit enforcement (can cause performance issues)
 3. **Folder Depth**: No limit on nesting (potential UI issues)
@@ -1261,6 +1310,7 @@ npm run cypress:open
 6. **Mobile**: Functional but not fully optimized
 
 ### Known Bugs
+
 - None currently reported
 
 ---
@@ -1268,12 +1318,14 @@ npm run cypress:open
 ## 📞 Support & Contributing
 
 ### Getting Help
+
 - Check existing documentation
 - Review Postman collection for API examples
 - Check GitHub issues
 - Contact: [GitHub Profile](https://github.com/Sujaljaiswal25)
 
 ### Contributing
+
 1. Fork the repository
 2. Create feature branch
 3. Make changes with tests
@@ -1281,6 +1333,7 @@ npm run cypress:open
 5. Wait for code review
 
 ### Code of Conduct
+
 - Be respectful
 - Write clean code
 - Document changes
@@ -1298,6 +1351,7 @@ This project is part of the AirDrive application portfolio.
 ## 👨‍💻 Author
 
 **Sujal Jaiswal**
+
 - GitHub: [@Sujaljaiswal25](https://github.com/Sujaljaiswal25)
 - Repository: [AirDrive.01](https://github.com/Sujaljaiswal25/AirDrive.01)
 
