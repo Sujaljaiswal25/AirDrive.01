@@ -64,33 +64,33 @@ const Header = ({ onRefresh }) => {
   ];
 
   return (
-    <header className="bg-dark-card border-b border-dark-border px-4 lg:px-6 py-4 shadow-dark-sm">
-      <div className="flex items-center justify-between gap-3">
+    <header className="bg-dark-card border-b border-dark-border px-3 sm:px-4 lg:px-6 py-3 sm:py-4 shadow-dark-sm">
+      <div className="flex items-center justify-between gap-2 sm:gap-3">
         {/* Left Section */}
-        <div className="flex items-center gap-3 flex-1">
+        <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
           <button
             onClick={() => dispatch(toggleSidebar())}
-            className="p-2 hover:bg-dark-hover rounded-lg transition-colors"
+            className="p-2 hover:bg-dark-hover rounded-lg transition-colors flex-shrink-0"
           >
             <Menu className="w-5 h-5 text-dark-text-secondary" />
           </button>
 
           {/* Search Bar - Desktop */}
           <div className="hidden md:block relative flex-1 max-w-xl">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-dark-text-muted w-5 h-5" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-dark-text-muted w-4 h-4" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => dispatch(setSearchQuery(e.target.value))}
               placeholder="Search files..."
-              className="w-full pl-10 pr-4 py-2.5 input-dark rounded-lg outline-none"
+              className="w-full pl-9 pr-4 py-2 text-sm input-dark rounded-lg outline-none"
             />
           </div>
 
           {/* Search Button - Mobile */}
           <button
             onClick={() => setShowSearch(!showSearch)}
-            className="md:hidden p-2 hover:bg-dark-hover rounded-lg transition-colors"
+            className="md:hidden p-2 hover:bg-dark-hover rounded-lg transition-colors flex-shrink-0"
           >
             <Search className="w-5 h-5 text-dark-text-secondary" />
           </button>
@@ -220,7 +220,7 @@ const Header = ({ onRefresh }) => {
             </button>
 
             {showSortMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-dark-card border border-dark-border rounded-lg shadow-dark-lg z-10 overflow-hidden">
+              <div className="absolute right-0 mt-2 w-48 bg-dark-card border border-dark-border rounded-lg shadow-dark-lg z-50 overflow-hidden">
                 {sortOptions.map((option) => (
                   <button
                     key={option.value}
@@ -264,19 +264,21 @@ const Header = ({ onRefresh }) => {
           {/* Upload Button */}
           <button
             onClick={() => dispatch(openUploadModal())}
-            className="btn-primary flex items-center gap-2 px-4 py-2 rounded-lg"
+            className="btn-primary flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg flex-shrink-0"
           >
             <Upload className="w-4 h-4" />
-            <span className="font-medium hidden sm:inline">Upload</span>
+            <span className="font-medium text-xs sm:text-sm hidden xs:inline">
+              Upload
+            </span>
           </button>
 
           {/* New Folder Button */}
           <button
             onClick={() => dispatch(openCreateFolderModal())}
-            className="hidden lg:flex items-center gap-2 px-4 py-2 border border-dark-border rounded-lg hover:bg-dark-hover transition-colors"
+            className="hidden lg:flex items-center gap-2 px-4 py-2 border border-dark-border rounded-lg hover:bg-dark-hover transition-colors flex-shrink-0"
           >
             <FolderPlus className="w-4 h-4 text-dark-text-secondary" />
-            <span className="font-medium text-dark-text-primary">
+            <span className="font-medium text-dark-text-primary text-sm">
               New Folder
             </span>
           </button>
@@ -284,32 +286,32 @@ const Header = ({ onRefresh }) => {
           {/* Mobile New Folder Button */}
           <button
             onClick={() => dispatch(openCreateFolderModal())}
-            className="lg:hidden p-2 border border-dark-border rounded-lg hover:bg-dark-hover transition-colors"
+            className="lg:hidden p-2 border border-dark-border rounded-lg hover:bg-dark-hover transition-colors flex-shrink-0"
           >
-            <FolderPlus className="w-5 h-5 text-dark-text-secondary" />
+            <FolderPlus className="w-4 h-4 text-dark-text-secondary" />
           </button>
         </div>
       </div>
 
       {/* Mobile Search Bar */}
       {showSearch && (
-        <div className="md:hidden mt-3 flex items-center gap-2">
+        <div className="md:hidden mt-2 flex items-center gap-2">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-dark-text-muted w-5 h-5" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-dark-text-muted w-4 h-4" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => dispatch(setSearchQuery(e.target.value))}
               placeholder="Search files..."
-              className="w-full pl-10 pr-4 py-2.5 input-dark rounded-lg outline-none"
+              className="w-full pl-9 pr-4 py-2 text-sm input-dark rounded-lg outline-none"
               autoFocus
             />
           </div>
           <button
             onClick={() => setShowSearch(false)}
-            className="p-2 hover:bg-dark-hover rounded-lg transition-colors"
+            className="p-2 hover:bg-dark-hover rounded-lg transition-colors flex-shrink-0"
           >
-            <X className="w-5 h-5 text-dark-text-secondary" />
+            <X className="w-4 h-4 text-dark-text-secondary" />
           </button>
         </div>
       )}

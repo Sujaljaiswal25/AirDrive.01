@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  sidebarOpen: true,
+  sidebarOpen: false,
   uploadModalOpen: false,
   createFolderModalOpen: false,
   shareModalOpen: false,

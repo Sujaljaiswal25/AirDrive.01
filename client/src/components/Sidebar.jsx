@@ -99,19 +99,21 @@ const Sidebar = () => {
   const sidebarContent = (
     <>
       {/* Logo & Close Button */}
-      <div className="p-6 border-b border-dark-border flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="relative w-10 h-10 bg-gradient-to-br from-accent-primary/20 to-accent-primary/10 rounded-2xl flex items-center justify-center border border-accent-primary/30">
-            <Cloud className="w-5 h-5 text-accent-primary" />
+      <div className="p-4 lg:p-6 border-b border-dark-border flex items-center justify-between">
+        <div className="flex items-center gap-2 lg:gap-3">
+          <div className="relative w-9 h-9 lg:w-10 lg:h-10 bg-gradient-to-br from-accent-primary/20 to-accent-primary/10 rounded-2xl flex items-center justify-center border border-accent-primary/30">
+            <Cloud className="w-4 h-4 lg:w-5 lg:h-5 text-accent-primary" />
           </div>
           <div>
             <h1
-              className="text-lg font-semibold text-dark-text-primary"
+              className="text-base lg:text-lg font-semibold text-dark-text-primary"
               style={{ fontFamily: "Inter, sans-serif" }}
             >
               Air<span className="text-accent-primary">Drive</span>
             </h1>
-            <p className="text-xs text-dark-text-muted">your cloud space</p>
+            <p className="text-[10px] lg:text-xs text-dark-text-muted">
+              your cloud space
+            </p>
           </div>
         </div>
         <button
@@ -123,9 +125,9 @@ const Sidebar = () => {
       </div>
 
       {/* User Info */}
-      <div className="p-4 border-b border-dark-border">
-        <div className="flex items-center gap-3 p-3 rounded-xl bg-dark-hover/50 hover:bg-dark-hover transition-colors">
-          <div className="relative">
+      <div className="p-3 lg:p-4 border-b border-dark-border">
+        <div className="flex items-center gap-2 lg:gap-3 p-2 lg:p-3 rounded-xl bg-dark-hover/50 hover:bg-dark-hover transition-colors">
+          <div className="relative flex-shrink-0">
             <img
               src={
                 user?.avatar ||
@@ -134,15 +136,15 @@ const Sidebar = () => {
                   "&background=3b82f6&color=fff"
               }
               alt={user?.name}
-              className="w-12 h-12 rounded-full object-cover ring-2 ring-accent-primary/20"
+              className="w-10 h-10 lg:w-12 lg:h-12 rounded-full object-cover ring-2 ring-accent-primary/20"
             />
-            <div className="absolute bottom-0 right-0 w-3 h-3 bg-accent-success rounded-full border-2 border-dark-card"></div>
+            <div className="absolute bottom-0 right-0 w-2.5 h-2.5 lg:w-3 lg:h-3 bg-accent-success rounded-full border-2 border-dark-card"></div>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-dark-text-primary truncate">
+            <p className="text-xs lg:text-sm font-semibold text-dark-text-primary truncate">
               {user?.name}
             </p>
-            <p className="text-xs text-dark-text-muted truncate">
+            <p className="text-[10px] lg:text-xs text-dark-text-muted truncate">
               {user?.email}
             </p>
           </div>
@@ -150,20 +152,20 @@ const Sidebar = () => {
       </div>
 
       {/* Main Menu */}
-      <nav className="flex-1 overflow-y-auto p-4">
+      <nav className="flex-1 overflow-y-auto p-3 lg:p-4">
         <div className="space-y-1">
           {menuItems.map((item) => (
             <button
               key={item.value}
               onClick={() => handleFolderChange(item.value)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+              className={`w-full flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-xl transition-all text-sm lg:text-base ${
                 currentFolder === item.value
                   ? "bg-gradient-to-r from-accent-primary/20 to-accent-secondary/20 text-accent-primary shadow-dark-sm"
                   : "text-dark-text-secondary hover:bg-dark-hover hover:text-dark-text-primary"
               }`}
             >
               <item.icon
-                className={`w-5 h-5 ${
+                className={`w-4 h-4 lg:w-5 lg:h-5 flex-shrink-0 ${
                   currentFolder === item.value
                     ? "text-accent-primary"
                     : item.color
@@ -175,8 +177,8 @@ const Sidebar = () => {
         </div>
 
         {/* Categories */}
-        <div className="mt-6">
-          <h3 className="px-4 text-xs font-bold text-dark-text-muted uppercase tracking-wider mb-3">
+        <div className="mt-4 lg:mt-6">
+          <h3 className="px-3 lg:px-4 text-[10px] lg:text-xs font-bold text-dark-text-muted uppercase tracking-wider mb-2 lg:mb-3">
             Categories
           </h3>
           <div className="space-y-1">
@@ -184,14 +186,14 @@ const Sidebar = () => {
               <button
                 key={item.value}
                 onClick={() => handleFolderChange(item.value)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                className={`w-full flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-xl transition-all text-sm lg:text-base ${
                   currentFolder === item.value
                     ? "bg-gradient-to-r from-accent-primary/20 to-accent-secondary/20 text-accent-primary shadow-dark-sm"
                     : "text-dark-text-secondary hover:bg-dark-hover hover:text-dark-text-primary"
                 }`}
               >
                 <item.icon
-                  className={`w-5 h-5 ${
+                  className={`w-4 h-4 lg:w-5 lg:h-5 flex-shrink-0 ${
                     currentFolder === item.value
                       ? "text-accent-primary"
                       : item.color
@@ -205,7 +207,7 @@ const Sidebar = () => {
       </nav>
 
       {/* Bottom Actions */}
-      <div className="p-4 border-t border-dark-border space-y-1">
+      <div className="p-3 lg:p-4 border-t border-dark-border space-y-1">
         <button
           onClick={() => {
             navigate("/profile");
@@ -213,16 +215,16 @@ const Sidebar = () => {
               dispatch(toggleSidebar());
             }
           }}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-dark-text-secondary hover:bg-dark-hover hover:text-dark-text-primary transition-all"
+          className="w-full flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-xl text-dark-text-secondary hover:bg-dark-hover hover:text-dark-text-primary transition-all text-sm lg:text-base"
         >
-          <Settings className="w-5 h-5" />
+          <Settings className="w-4 h-4 lg:w-5 lg:h-5 flex-shrink-0" />
           <span className="font-medium">Settings</span>
         </button>
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-accent-error hover:bg-accent-error/10 transition-all"
+          className="w-full flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-xl text-accent-error hover:bg-accent-error/10 transition-all text-sm lg:text-base"
         >
-          <LogOut className="w-5 h-5" />
+          <LogOut className="w-4 h-4 lg:w-5 lg:h-5 flex-shrink-0" />
           <span className="font-medium">Logout</span>
         </button>
       </div>

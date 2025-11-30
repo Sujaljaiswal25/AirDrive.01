@@ -25,7 +25,7 @@ import {
 } from "../store/slices/uiSlice";
 import { setCurrentFolder } from "../store/slices/fileSlice";
 import toast from "react-hot-toast";
-import * as fileAPI from "../services/file.service";
+import { fileAPI } from "../services/file.service";
 
 const FileRow = ({ file, onUpdate }) => {
   const dispatch = useDispatch();
@@ -73,12 +73,8 @@ const FileRow = ({ file, onUpdate }) => {
     e.stopPropagation();
     try {
       const response = await fileAPI.toggleStar(file._id);
-      setIsStarred(response.data.file.isStarred);
-      toast.success(
-        response.data.file.isStarred
-          ? "Added to starred"
-          : "Removed from starred"
-      );
+      setIsStarred(response.isStarred);
+      toast.success(response.message);
       if (onUpdate) onUpdate();
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to star file");
@@ -134,11 +130,11 @@ const FileRow = ({ file, onUpdate }) => {
       onClick={handleRowClick}
     >
       {/* Name */}
-      <td className="px-4 lg:px-6 py-4">
-        <div className="flex items-center gap-3">
+      <td className="px-3 md:px-4 lg:px-6 py-3 md:py-4">
+        <div className="flex items-center gap-2 md:gap-3">
           {getFileIcon()}
           <span
-            className="font-medium text-dark-text-primary truncate max-w-xs"
+            className="font-medium text-dark-text-primary truncate max-w-[150px] md:max-w-xs"
             title={file.name}
           >
             {file.name}
@@ -147,35 +143,35 @@ const FileRow = ({ file, onUpdate }) => {
       </td>
 
       {/* Type */}
-      <td className="hidden md:table-cell px-4 lg:px-6 py-4 text-sm text-dark-text-secondary">
+      <td className="hidden md:table-cell px-3 md:px-4 lg:px-6 py-3 md:py-4 text-sm text-dark-text-secondary">
         {file.type === "folder" ? "Folder" : file.type?.split("/")[0] || "File"}
       </td>
 
       {/* Size */}
-      <td className="hidden sm:table-cell px-4 lg:px-6 py-4 text-sm text-dark-text-secondary">
+      <td className="hidden sm:table-cell px-3 md:px-4 lg:px-6 py-3 md:py-4 text-sm text-dark-text-secondary">
         {file.type === "folder" ? "-" : formatFileSize(file.size)}
       </td>
 
       {/* Modified */}
-      <td className="hidden lg:table-cell px-4 lg:px-6 py-4 text-sm text-dark-text-secondary">
+      <td className="hidden lg:table-cell px-3 md:px-4 lg:px-6 py-3 md:py-4 text-sm text-dark-text-secondary">
         {formatDate(file.createdAt)}
       </td>
 
       {/* Actions */}
-      <td className="px-4 lg:px-6 py-4 relative">
+      <td className="px-3 md:px-4 lg:px-6 py-3 md:py-4 relative text-right">
         <div ref={menuRef}>
           <button
             onClick={(e) => {
               e.stopPropagation();
               setShowMenu(!showMenu);
             }}
-            className="p-2 hover:bg-dark-card rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+            className="p-2 hover:bg-dark-card rounded-lg opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all"
           >
             <MoreVertical className="w-4 h-4 text-dark-text-secondary" />
           </button>
 
           {showMenu && (
-            <div className="absolute right-0 mt-2 w-48 bg-dark-card border border-dark-border rounded-lg shadow-dark-lg z-10 overflow-hidden">
+            <div className="absolute right-0 mt-2 w-48 bg-dark-card border border-dark-border rounded-lg shadow-dark-lg z-50 overflow-hidden">
               {currentFolder === "trash" ? (
                 // Trash view: Show restore and permanent delete
                 <>
@@ -279,24 +275,24 @@ const FileRow = ({ file, onUpdate }) => {
 
 const FileList = ({ files, onUpdate }) => {
   return (
-    <div className="card-dark overflow-hidden">
+    <div className="card-dark overflow-hidden rounded-xl">
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full min-w-[600px]">
           <thead className="bg-dark-hover border-b border-dark-border">
             <tr>
-              <th className="px-4 lg:px-6 py-3 text-left text-xs font-semibold text-dark-text-secondary uppercase tracking-wider">
+              <th className="px-3 md:px-4 lg:px-6 py-3 text-left text-xs font-semibold text-dark-text-secondary uppercase tracking-wider">
                 Name
               </th>
-              <th className="hidden md:table-cell px-4 lg:px-6 py-3 text-left text-xs font-semibold text-dark-text-secondary uppercase tracking-wider">
+              <th className="hidden md:table-cell px-3 md:px-4 lg:px-6 py-3 text-left text-xs font-semibold text-dark-text-secondary uppercase tracking-wider">
                 Type
               </th>
-              <th className="hidden sm:table-cell px-4 lg:px-6 py-3 text-left text-xs font-semibold text-dark-text-secondary uppercase tracking-wider">
+              <th className="hidden sm:table-cell px-3 md:px-4 lg:px-6 py-3 text-left text-xs font-semibold text-dark-text-secondary uppercase tracking-wider">
                 Size
               </th>
-              <th className="hidden lg:table-cell px-4 lg:px-6 py-3 text-left text-xs font-semibold text-dark-text-secondary uppercase tracking-wider">
+              <th className="hidden lg:table-cell px-3 md:px-4 lg:px-6 py-3 text-left text-xs font-semibold text-dark-text-secondary uppercase tracking-wider">
                 Modified
               </th>
-              <th className="px-4 lg:px-6 py-3 text-left text-xs font-semibold text-dark-text-secondary uppercase tracking-wider">
+              <th className="px-3 md:px-4 lg:px-6 py-3 text-right text-xs font-semibold text-dark-text-secondary uppercase tracking-wider">
                 Actions
               </th>
             </tr>

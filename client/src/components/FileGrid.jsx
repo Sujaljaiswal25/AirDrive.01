@@ -7,6 +7,7 @@ import {
   Music,
   File,
   Folder,
+  FolderOpen,
   MoreVertical,
   Download,
   Share2,
@@ -152,7 +153,7 @@ const FileCard = ({ file, onUpdate }) => {
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.2 }}
-      className="group relative bg-dark-card hover:bg-dark-hover border border-dark-border hover:border-accent-primary/30 rounded-xl p-3 cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-accent-primary/5"
+      className="group relative bg-dark-card hover:bg-dark-hover border border-dark-border hover:border-accent-primary/40 rounded-xl p-3 md:p-4 cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-accent-primary/10 hover:-translate-y-1"
       onClick={handleCardClick}
     >
       {/* Star Badge */}
@@ -201,49 +202,57 @@ const FileCard = ({ file, onUpdate }) => {
       </div>
 
       {/* Quick Actions - Always visible on mobile, hover on desktop */}
-      <div className="flex items-center gap-1 mt-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-        {file.type !== "folder" && (
+      <div className="flex items-center justify-center gap-1.5 mt-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200">
+        {file.type !== "folder" ? (
           <>
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 dispatch(openPreviewModal(file));
               }}
-              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-dark-hover hover:bg-accent-primary/10 hover:text-accent-primary rounded-lg transition-colors text-xs font-medium"
+              className="p-2 bg-accent-primary/10 hover:bg-accent-primary/20 text-accent-primary border border-accent-primary/30 hover:border-accent-primary/50 rounded-lg transition-all group/btn"
               title="Preview"
             >
-              <Eye className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">View</span>
+              <Eye className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
             </button>
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 handleDownload();
               }}
-              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-dark-hover hover:bg-accent-success/10 hover:text-accent-success rounded-lg transition-colors text-xs font-medium"
+              className="p-2 bg-accent-success/10 hover:bg-accent-success/20 text-accent-success border border-accent-success/30 hover:border-accent-success/50 rounded-lg transition-all group/btn"
               title="Download"
             >
-              <Download className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Get</span>
+              <Download className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                dispatch(openShareModal(file));
+              }}
+              className="p-2 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-blue-500/10 hover:from-purple-500/20 hover:via-pink-500/20 hover:to-blue-500/20 text-purple-400 hover:text-pink-400 border border-purple-500/30 hover:border-pink-500/50 rounded-lg transition-all group/btn shadow-lg shadow-purple-500/10 hover:shadow-pink-500/20"
+              title="Share"
+            >
+              <Share2 className="w-4 h-4 group-hover/btn:rotate-12 group-hover/btn:scale-110 transition-transform" />
             </button>
           </>
+        ) : (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCardClick();
+            }}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-accent-primary/10 to-accent-secondary/10 hover:from-accent-primary/20 hover:to-accent-secondary/20 text-accent-primary border border-accent-primary/30 hover:border-accent-primary/50 rounded-lg transition-all text-sm font-medium"
+          >
+            <FolderOpen className="w-4 h-4" />
+            <span>Open Folder</span>
+          </button>
         )}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            dispatch(openShareModal(file));
-          }}
-          className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-dark-hover hover:bg-accent-primary/10 hover:text-accent-primary rounded-lg transition-colors text-xs font-medium"
-          title="Share"
-        >
-          <Share2 className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Share</span>
-        </button>
       </div>
 
       {/* Actions Menu */}
       <div
-        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute top-2 right-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200 z-20"
         ref={menuRef}
       >
         <button
@@ -251,13 +260,17 @@ const FileCard = ({ file, onUpdate }) => {
             e.stopPropagation();
             setShowMenu(!showMenu);
           }}
-          className="p-2 bg-dark-card rounded-lg shadow-dark-md hover:bg-dark-hover border border-dark-border"
+          className={`p-2 rounded-lg shadow-lg transition-all ${
+            showMenu
+              ? "bg-accent-primary/20 border-accent-primary/50 text-accent-primary"
+              : "bg-dark-card/90 backdrop-blur-sm border-dark-border hover:bg-dark-hover hover:border-accent-primary/30"
+          } border`}
         >
-          <MoreVertical className="w-4 h-4 text-dark-text-secondary" />
+          <MoreVertical className="w-4 h-4" />
         </button>
 
         {showMenu && (
-          <div className="absolute right-0 mt-2 w-48 bg-dark-card border border-dark-border rounded-lg shadow-dark-lg z-10 overflow-hidden">
+          <div className="absolute right-0 mt-2 w-48 bg-dark-card border border-dark-border rounded-lg shadow-dark-lg z-50 overflow-hidden">
             {currentFolder === "trash" ? (
               // Trash view actions
               <>
@@ -358,7 +371,7 @@ const FileCard = ({ file, onUpdate }) => {
 
 const FileGrid = ({ files, onUpdate }) => {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4">
       {files.map((file) => (
         <FileCard key={file._id} file={file} onUpdate={onUpdate} />
       ))}
