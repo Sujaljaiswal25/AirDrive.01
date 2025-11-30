@@ -141,4 +141,46 @@ const refreshToken = async (req, res) => {
   }
 };
 
-module.exports = { register, login, logout, refreshToken };
+// ================== GOOGLE OAUTH ==================
+const googleAuth = (req, res, next) => {
+  // This will be handled by passport middleware
+  // Just a placeholder for route definition
+};
+
+const googleCallback = async (req, res) => {
+  try {
+    const user = req.user;
+
+    if (!user) {
+      return res.redirect(
+        `${process.env.FRONTEND_URL}/login?error=Authentication failed`
+      );
+    }
+
+    // Generate tokens
+    const tokens = generateTokenPair(user);
+
+    // Set refresh token in cookie
+    setRefreshTokenCookie(res, tokens.refreshToken);
+
+    // Redirect to frontend with access token
+    const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?token=${tokens.accessToken}`;
+    return res.redirect(redirectUrl);
+  } catch (err) {
+    console.error("Google OAuth Callback Error:", err);
+    return res.redirect(
+      `${process.env.FRONTEND_URL}/login?error=${encodeURIComponent(
+        err.message
+      )}`
+    );
+  }
+};
+
+module.exports = {
+  register,
+  login,
+  logout,
+  refreshToken,
+  googleAuth,
+  googleCallback,
+};

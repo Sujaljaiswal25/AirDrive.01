@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
+import OAuthCallback from "./pages/OAuthCallback";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const App = () => {
@@ -24,6 +25,9 @@ const App = () => {
           !isAuthenticated ? <Register /> : <Navigate to="/dashboard" replace />
         }
       />
+
+      {/* OAuth Callback Route */}
+      <Route path="/oauth/callback" element={<OAuthCallback />} />
 
       {/* Protected Routes */}
       <Route

@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const passport = require("./config/passport");
 
 // Import routes
 const authRoute = require("./routes/auth.route");
@@ -49,6 +50,9 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
+
+// Initialize Passport
+app.use(passport.initialize());
 
 // Health Check Route
 app.get("/", (req, res) => {

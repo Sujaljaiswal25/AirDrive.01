@@ -24,4 +24,10 @@ export const authAPI = {
     const response = await axiosInstance.post("/api/auth/refresh-token");
     return response.data;
   },
+
+  // Get user profile (for OAuth callback)
+  getProfile: async () => {
+    const response = await axiosInstance.get("/api/profile/me");
+    return response.data;
+  },
 };

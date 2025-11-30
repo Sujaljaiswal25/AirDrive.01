@@ -121,21 +121,23 @@
 
 ### Backend Technologies
 
-| Technology    | Version | Purpose              |
-| ------------- | ------- | -------------------- |
-| Node.js       | -       | Runtime Environment  |
-| Express.js    | 5.1.0   | Web Framework        |
-| MongoDB       | -       | NoSQL Database       |
-| Mongoose      | 8.18.0  | MongoDB ODM          |
-| Redis         | 5.10.0  | Caching Layer        |
-| ioredis       | 5.8.2   | Redis Client         |
-| JWT           | 9.0.2   | Authentication       |
-| bcryptjs      | 3.0.2   | Password Hashing     |
-| Multer        | 2.0.2   | File Upload          |
-| ImageKit      | 6.0.0   | Cloud Storage & CDN  |
-| dotenv        | 17.2.1  | Environment Config   |
-| cookie-parser | 1.4.7   | Cookie Handling      |
-| CORS          | 2.8.5   | Cross-Origin Support |
+| Technology              | Version | Purpose              |
+| ----------------------- | ------- | -------------------- |
+| Node.js                 | -       | Runtime Environment  |
+| Express.js              | 5.1.0   | Web Framework        |
+| MongoDB                 | -       | NoSQL Database       |
+| Mongoose                | 8.18.0  | MongoDB ODM          |
+| Redis                   | 5.10.0  | Caching Layer        |
+| ioredis                 | 5.8.2   | Redis Client         |
+| JWT                     | 9.0.2   | Authentication       |
+| bcryptjs                | 3.0.2   | Password Hashing     |
+| Multer                  | 2.0.2   | File Upload          |
+| Passport.js             | 0.7.0   | Authentication       |
+| passport-google-oauth20 | 2.0.0   | Google OAuth         |
+| ImageKit                | 6.0.0   | Cloud Storage & CDN  |
+| dotenv                  | 17.2.1  | Environment Config   |
+| cookie-parser           | 1.4.7   | Cookie Handling      |
+| CORS                    | 2.8.5   | Cross-Origin Support |
 
 ---
 
@@ -253,11 +255,13 @@ AirDrive/
 
 - **User Registration** with email validation
 - **Secure Login** with JWT tokens
+- **Google OAuth 2.0** - Sign in with Google account
 - **Access & Refresh Tokens** for session management
 - **Protected Routes** requiring authentication
 - **Password Hashing** with bcrypt (10 rounds)
 - **HTTP-only Cookies** for refresh tokens
 - **Auto Token Refresh** on expiration
+- **Account Linking** - Connect Google to existing accounts
 - **Profile Management** (update info, change password, avatar)
 
 ### 2. File Management
@@ -340,6 +344,11 @@ JWT_SECRET=your-super-secret-jwt-key-min-32-chars
 JWT_REFRESH_SECRET=your-refresh-secret-key-min-32-chars
 ACCESS_TOKEN_EXPIRE=15m
 REFRESH_TOKEN_EXPIRE=7d
+
+# Google OAuth Configuration
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback
 
 # ImageKit Configuration
 IMAGEKIT_PRIVATE_KEY=your-imagekit-private-key
@@ -503,6 +512,17 @@ Response: 200 OK
     "accessToken": "..."
   }
 }
+```
+
+#### Google OAuth Login
+
+```http
+GET /api/auth/google
+# Redirects to Google OAuth consent screen
+
+GET /api/auth/google/callback?code=...
+# Google redirects here after authorization
+# Backend processes and redirects to frontend with token
 ```
 
 #### Logout
@@ -856,14 +876,18 @@ const uploadFile = async (req, res) => {
   _id: ObjectId,
   name: String,              // 2-50 characters
   email: String,             // Unique, lowercase
-  password: String,          // Hashed with bcrypt
+  password: String,          // Hashed with bcrypt (optional for OAuth users)
   avatar: String,            // Profile picture URL
   role: String,              // 'user' or 'admin'
+  authProvider: String,      // 'local' or 'google'
+  googleId: String,          // Google account ID (for OAuth users)
   createdAt: Date,
   updatedAt: Date
 }
 
-Indexes: email (unique)
+Indexes:
+  - email (unique)
+  - googleId (unique, sparse)
 ```
 
 ### File Schema (MongoDB)
@@ -939,16 +963,16 @@ folder:{folderId}:contents   // Folder contents (5 min TTL)
 
 ### Authentication Flow
 
-1. **User Registration**
+1. **User Registration (Email/Password)**
 
    - Validate input
    - Hash password (bcrypt, 10 rounds)
-   - Create user in database
+   - Create user in database with authProvider: 'local'
    - Generate token pair
    - Set refresh token cookie
    - Return user + access token
 
-2. **User Login**
+2. **User Login (Email/Password)**
 
    - Validate credentials
    - Compare password hash
@@ -956,24 +980,49 @@ folder:{folderId}:contents   // Folder contents (5 min TTL)
    - Set refresh token cookie
    - Return user + access token
 
-3. **Protected Request**
+3. **Google OAuth Flow**
+
+   - User clicks "Sign in with Google"
+   - Redirect to Google OAuth consent screen
+   - User authorizes application
+   - Google redirects back with authorization code
+   - Backend exchanges code for user profile
+   - Check if user exists by googleId or email
+   - Create new user or link existing account
+   - Generate token pair
+   - Redirect to frontend with access token
+   - Frontend stores token and fetches profile
+
+4. **Protected Request**
 
    - Extract token from Authorization header
    - Verify token with JWT_SECRET
    - Attach user to request object
    - Proceed to route handler
 
-4. **Token Refresh**
+5. **Token Refresh**
 
    - Extract refresh token from cookie
    - Verify with JWT_REFRESH_SECRET
    - Generate new access token
    - Return new access token
 
-5. **Logout**
+6. **Logout**
    - Clear refresh token cookie
    - Client removes access token
    - Optionally blacklist token (Redis)
+
+---
+
+## 📚 Additional Documentation
+
+### Google OAuth Setup
+
+For detailed instructions on setting up Google OAuth, see:
+
+- **[GOOGLE_OAUTH_SETUP.md](./GOOGLE_OAUTH_SETUP.md)** - Complete setup guide
+- **[QUICK_START_OAUTH.md](./QUICK_START_OAUTH.md)** - Quick reference
+- **[OAUTH_IMPLEMENTATION.md](./OAUTH_IMPLEMENTATION.md)** - Implementation details
 
 ---
 
